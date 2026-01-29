@@ -1,0 +1,17 @@
+# DOMAIN MODEL
+
+Entities:
+
+1. Tournament
+2. Participant
+3. Match
+   - id
+   - tournament_id
+   - round_number
+   - player_a_id
+   - player_b_id
+   - winner_id (nullable)
+   - next_match_id (nullable)
+   - next_match_slot (A or B)
+4. User (future)
+5. Team (future)

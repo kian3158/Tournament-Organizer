@@ -1,0 +1,6 @@
+# ARCHITECTURE
+
+- Monorepo: frontend + backend in one repository
+- Backend: FastAPI handles logic, services, database
+- Frontend: React handles UI, connects to API
+- Bracket logic lives in services, not routes
