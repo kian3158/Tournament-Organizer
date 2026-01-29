@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from .base import Base
 
+
 class Participant(Base):
     __tablename__ = "participants"
 

@@ -2,9 +2,11 @@ from sqlalchemy import Column, Integer, ForeignKey, Enum
 from .base import Base
 import enum
 
+
 class MatchSlot(str, enum.Enum):
     A = "A"
     B = "B"
+
 
 class Match(Base):
     __tablename__ = "matches"

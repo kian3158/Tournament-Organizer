@@ -20,3 +20,8 @@ pytest = "^8.3.0"
 [build-system]
 requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "C90"]
+exclude = ["alembic", "tests"]

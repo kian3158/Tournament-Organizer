@@ -1,11 +1,13 @@
-from sqlalchemy import Column, Integer, String, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Enum
 from .base import Base
 import enum
+
 
 class TournamentStatus(str, enum.Enum):
     DRAFT = "DRAFT"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
+
 
 class Tournament(Base):
     __tablename__ = "tournaments"
