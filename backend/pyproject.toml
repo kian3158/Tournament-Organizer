@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "tournament-organizer-backend"
+version = "0.1.0"
+description = "Backend for tournament organizer app"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100.0"
+uvicorn = "^0.23.0"
+sqlalchemy = "^2.0.0"
+pydantic = "^2.5.2"
+alembic = "^1.12.0"
+
+[tool.poetry.dev-dependencies]
+black = "^24.3.0"
+ruff = "^0.0.420"
+pytest = "^8.3.0"
+
+[build-system]
+requires = ["poetry-core>=1.4.0"]
+build-backend = "poetry.core.masonry.api"
