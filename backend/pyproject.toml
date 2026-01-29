@@ -17,6 +17,9 @@ black = "^24.3.0"
 ruff = "^0.0.420"
 pytest = "^8.3.0"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.14.14"
+
 [build-system]
 requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"
