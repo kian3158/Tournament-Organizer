@@ -5,6 +5,7 @@ from .tournament import (
     TournamentCreate,
     TournamentRead,
 )
+from .user import LoginRequest, Token, UserCreate, UserRead
 
 __all__ = [
     "TournamentCreate",
@@ -14,4 +15,8 @@ __all__ = [
     "ParticipantRead",
     "MatchRead",
     "ResultReport",
+    "UserCreate",
+    "UserRead",
+    "LoginRequest",
+    "Token",
 ]

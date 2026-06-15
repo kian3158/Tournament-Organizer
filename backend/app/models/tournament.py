@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey
 from .base import Base
 import enum
 
@@ -27,4 +27,4 @@ class Tournament(Base):
         default=TournamentFormat.SINGLE_ELIM,
         nullable=False,
     )
-    owner_id = Column(Integer, nullable=True)  # for future User support
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)

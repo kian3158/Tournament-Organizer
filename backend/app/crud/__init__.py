@@ -1,3 +1,3 @@
-from . import match, participant, tournament
+from . import match, participant, tournament, user
 
-__all__ = ["tournament", "participant", "match"]
+__all__ = ["tournament", "participant", "match", "user"]
