@@ -72,14 +72,16 @@ Live spectating.
 - Verified in-browser: a reported result is pushed to a connected client.
 
 ## Phase 5 — More formats (breadth, on a solid base)
-Refactor to a clean strategy interface, then add one at a time, each fully
-tested:
+Add one at a time on the `FormatStrategy` interface, each fully tested:
 
-- [ ] Extract `TournamentFormat` interface; make single-elim an implementation.
-- [ ] **Double-elimination** (losers bracket — the hardest).
+- [x] `FormatStrategy` interface; single-elim as an implementation (Phase 1).
+- [x] **Double-elimination** — winners + losers brackets, grand final with
+      bracket reset. Loser-routing added to the `Match` model; bracket-aware
+      frontend rendering. Power-of-two only for now (byes → backlog). Verified
+      in-browser (winner advances, loser drops, reset path tested).
+- [x] Let the user pick the format at tournament creation.
 - [ ] **Round-robin** (standings/points).
 - [ ] **Swiss** (record-based pairing).
-- [ ] Let the user pick the format at tournament creation.
 
 ## Phase 6 — Production polish (the resume payoff)
 - [ ] `docker-compose` for the full stack (incl. PostgreSQL).
@@ -103,5 +105,8 @@ tested:
 - **Phase 4 — done.** WebSocket channel per tournament; the server pushes live
   bracket updates on generate/result, and the frontend subscribes for live
   spectating. Verified in-browser.
+- **Phase 5 — in progress.** Double-elimination done (winners/losers brackets +
+  grand-final reset, format picker at creation, bracket-aware UI). Round-robin
+  and swiss still to come.
 
-Currently at: **Phase 5 — More formats (next).**
+Currently at: **Phase 5 — round-robin next.**
