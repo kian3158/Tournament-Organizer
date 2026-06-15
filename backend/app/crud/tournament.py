@@ -5,8 +5,14 @@ from sqlalchemy.orm import Session
 from app.models.tournament import Tournament, TournamentFormat
 
 
-def create(db: Session, *, name: str, format: TournamentFormat) -> Tournament:
-    tournament = Tournament(name=name, format=format)
+def create(
+    db: Session,
+    *,
+    name: str,
+    format: TournamentFormat,
+    owner_id: Optional[int] = None,
+) -> Tournament:
+    tournament = Tournament(name=name, format=format, owner_id=owner_id)
     db.add(tournament)
     db.commit()
     db.refresh(tournament)
@@ -17,5 +23,10 @@ def get(db: Session, tournament_id: int) -> Optional[Tournament]:
     return db.get(Tournament, tournament_id)
 
 
-def list_all(db: Session) -> list[Tournament]:
-    return db.query(Tournament).order_by(Tournament.id).all()
+def list_for_owner(db: Session, owner_id: int) -> list[Tournament]:
+    return (
+        db.query(Tournament)
+        .filter(Tournament.owner_id == owner_id)
+        .order_by(Tournament.id)
+        .all()
+    )

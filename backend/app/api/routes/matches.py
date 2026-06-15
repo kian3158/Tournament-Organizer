@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app import crud
+from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.match import Match
+from app.models.user import User
 from app.schemas import MatchRead, ResultReport
 from app.services.bracket import BracketService
 from app.services.exceptions import BracketError
@@ -14,11 +18,20 @@ def report_result(
     match_id: int,
     payload: ResultReport,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    # Ownership is checked against the match's tournament before mutating.
+    match = db.get(Match, match_id)
+    if match is not None:
+        tournament = crud.tournament.get(db, match.tournament_id)
+        if tournament is not None and tournament.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="You do not own this tournament"
+            )
+
     try:
         match = BracketService().advance_match(db, match_id, payload.winner_id)
     except BracketError as exc:
-        # "not found" is reported as 404, other invalid ops as 400.
         if "not found" in str(exc).lower():
             raise HTTPException(status_code=404, detail=str(exc))
         raise HTTPException(status_code=400, detail=str(exc))
