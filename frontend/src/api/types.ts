@@ -47,13 +47,24 @@ export interface Match {
     | "LOSERS"
     | "GRAND_FINAL"
     | "GRAND_FINAL_RESET"
+    | "ROUND_ROBIN"
     | null;
   loser_next_match_id: number | null;
   loser_next_match_slot: "A" | "B" | null;
+}
+
+export interface Standing {
+  participant_id: number;
+  name: string;
+  played: number;
+  wins: number;
+  losses: number;
+  points: number;
 }
 
 export interface Bracket {
   tournament: Tournament;
   participants: Participant[];
   matches: Match[];
+  standings: Standing[] | null;
 }

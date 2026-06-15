@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Match, Bracket as BracketData } from "../api/types";
+import type { Match, Standing, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
 interface Props {
@@ -20,13 +20,23 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
 
   if (matches.length === 0) return null;
 
-  const isDouble = matches.some((m) => m.bracket);
+  const isRoundRobin = matches.some((m) => m.bracket === "ROUND_ROBIN");
+  const isDouble = !isRoundRobin && matches.some((m) => m.bracket);
+
   const champion =
-    tournament.status === "COMPLETED" ? findChampion(matches) : null;
+    tournament.status === "COMPLETED"
+      ? data.standings?.length
+        ? data.standings[0].participant_id
+        : findChampion(matches)
+      : null;
+
+  const sectionProps = { matches, nameOf, canReport, onPickWinner };
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold">Bracket</h2>
+      <h2 className="mb-4 text-xl font-semibold">
+        {isRoundRobin ? "Standings & schedule" : "Bracket"}
+      </h2>
 
       {champion != null && (
         <div className="mb-6 rounded-md border border-green-700 bg-green-900/40 px-4 py-3 text-green-200">
@@ -34,20 +44,12 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
         </div>
       )}
 
-      {isDouble ? (
-        <DoubleElimination
-          matches={matches}
-          nameOf={nameOf}
-          canReport={canReport}
-          onPickWinner={onPickWinner}
-        />
+      {isRoundRobin ? (
+        <RoundRobin standings={data.standings ?? []} {...sectionProps} />
+      ) : isDouble ? (
+        <DoubleElimination {...sectionProps} />
       ) : (
-        <SingleElimination
-          matches={matches}
-          nameOf={nameOf}
-          canReport={canReport}
-          onPickWinner={onPickWinner}
-        />
+        <SingleElimination {...sectionProps} />
       )}
     </section>
   );
@@ -95,6 +97,56 @@ function DoubleElimination({ matches, ...rest }: SectionProps) {
         }
         {...rest}
       />
+    </div>
+  );
+}
+
+interface RoundRobinProps extends SectionProps {
+  standings: Standing[];
+}
+
+function RoundRobin({ standings, matches, ...rest }: RoundRobinProps) {
+  const rounds = groupByRound(matches);
+  return (
+    <div className="space-y-8">
+      <StandingsTable standings={standings} />
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-gray-300">Schedule</h3>
+        <RoundColumns rounds={rounds} {...rest} />
+      </div>
+    </div>
+  );
+}
+
+function StandingsTable({ standings }: { standings: Standing[] }) {
+  if (standings.length === 0) return null;
+  return (
+    <div>
+      <h3 className="mb-3 text-lg font-semibold text-gray-300">Standings</h3>
+      <table className="w-full max-w-lg border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-gray-700 text-left text-gray-400">
+            <th className="py-2 pr-4">#</th>
+            <th className="py-2 pr-4">Participant</th>
+            <th className="py-2 pr-4 text-center">P</th>
+            <th className="py-2 pr-4 text-center">W</th>
+            <th className="py-2 pr-4 text-center">L</th>
+            <th className="py-2 text-center">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.map((s, i) => (
+            <tr key={s.participant_id} className="border-b border-gray-800">
+              <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
+              <td className="py-2 pr-4 font-medium">{s.name}</td>
+              <td className="py-2 pr-4 text-center">{s.played}</td>
+              <td className="py-2 pr-4 text-center text-green-300">{s.wins}</td>
+              <td className="py-2 pr-4 text-center text-red-300">{s.losses}</td>
+              <td className="py-2 text-center font-semibold">{s.points}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
