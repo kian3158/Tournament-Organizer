@@ -20,6 +20,11 @@ export function setToken(token: string | null) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
+export function bracketSocketUrl(tournamentId: number): string {
+  const wsBase = BASE_URL.replace(/^http/, "ws");
+  return `${wsBase}/ws/tournaments/${tournamentId}`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {

@@ -5,6 +5,7 @@ import type { Bracket } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import BracketView from "../components/Bracket";
 import ParticipantManager from "../components/ParticipantManager";
+import { useBracketSocket } from "../hooks/useBracketSocket";
 
 export default function TournamentPage() {
   const { id } = useParams();
@@ -23,6 +24,9 @@ export default function TournamentPage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // Live updates: the server pushes a fresh bracket whenever it changes.
+  useBracketSocket(tournamentId, setBracket);
 
   async function handleGenerate() {
     setError(null);
