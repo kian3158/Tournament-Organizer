@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey
 from .base import Base
 import enum
 
@@ -9,10 +9,22 @@ class TournamentStatus(str, enum.Enum):
     COMPLETED = "COMPLETED"
 
 
+class TournamentFormat(str, enum.Enum):
+    SINGLE_ELIM = "SINGLE_ELIM"
+    DOUBLE_ELIM = "DOUBLE_ELIM"
+    ROUND_ROBIN = "ROUND_ROBIN"
+    SWISS = "SWISS"
+
+
 class Tournament(Base):
     __tablename__ = "tournaments"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     status = Column(Enum(TournamentStatus), default=TournamentStatus.DRAFT)
-    owner_id = Column(Integer, nullable=True)  # for future User support
+    format = Column(
+        Enum(TournamentFormat),
+        default=TournamentFormat.SINGLE_ELIM,
+        nullable=False,
+    )
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)

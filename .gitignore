@@ -5,6 +5,13 @@ __pycache__/
 *.pyd
 .env
 
+# Local dev database
+*.db
+
+# Coverage output
+.coverage
+htmlcov/
+
 # Node
 node_modules/
 dist/
@@ -12,3 +19,7 @@ build/
 
 # VSCode
 .vscode/
+
+# Claude working notes (local, not committed)
+AGENT_NOTES.md
+.claude/

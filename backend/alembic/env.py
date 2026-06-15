@@ -2,18 +2,22 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+from app.core.config import settings
 from app.models.base import Base
-from app.models.tournament import Tournament
-from app.models.participant import Participant
-from app.models.match import Match
-import os
+
+# Import models so their tables register on Base.metadata for autogenerate.
+from app.models import Tournament, Participant, Match, User  # noqa: F401
 
 config = context.config
 fileConfig(config.config_file_name)
+
+# Drive the DB URL from app settings rather than the placeholder in alembic.ini.
+config.set_main_option("sqlalchemy.url", settings.database_url)
+
 target_metadata = Base.metadata
 
 def run_migrations_offline():
-    url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    url = settings.database_url
     context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
