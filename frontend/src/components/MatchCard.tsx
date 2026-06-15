@@ -44,6 +44,8 @@ export default function MatchCard({
 
 function slotLabel(match: Match, playerId: number | null): string | null {
   if (playerId != null) return null;
+  // In swiss, an empty slot is always a bye (no opponent this round).
+  if (match.bracket === "SWISS") return "BYE";
   // Empty first-round slots are byes only in elimination round 1; everywhere
   // else (later rounds, losers bracket, grand final) the slot is pending.
   const isElimFirstRound =

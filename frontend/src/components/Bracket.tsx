@@ -20,8 +20,10 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
 
   if (matches.length === 0) return null;
 
-  const isRoundRobin = matches.some((m) => m.bracket === "ROUND_ROBIN");
-  const isDouble = !isRoundRobin && matches.some((m) => m.bracket);
+  const isStandings = matches.some(
+    (m) => m.bracket === "ROUND_ROBIN" || m.bracket === "SWISS"
+  );
+  const isDouble = !isStandings && matches.some((m) => m.bracket);
 
   const champion =
     tournament.status === "COMPLETED"
@@ -35,7 +37,7 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
   return (
     <section>
       <h2 className="mb-4 text-xl font-semibold">
-        {isRoundRobin ? "Standings & schedule" : "Bracket"}
+        {isStandings ? "Standings & schedule" : "Bracket"}
       </h2>
 
       {champion != null && (
@@ -44,7 +46,7 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
         </div>
       )}
 
-      {isRoundRobin ? (
+      {isStandings ? (
         <RoundRobin standings={data.standings ?? []} {...sectionProps} />
       ) : isDouble ? (
         <DoubleElimination {...sectionProps} />

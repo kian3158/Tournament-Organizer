@@ -48,6 +48,7 @@ export interface Match {
     | "GRAND_FINAL"
     | "GRAND_FINAL_RESET"
     | "ROUND_ROBIN"
+    | "SWISS"
     | null;
   loser_next_match_id: number | null;
   loser_next_match_slot: "A" | "B" | null;
