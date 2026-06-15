@@ -87,12 +87,15 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
       after each completes, pairing by record with rematch avoidance and byes;
       ceil(log2 n) rounds. Reuses the standings view. Verified in-browser.
 
-## Phase 6 — Production polish (the resume payoff)
-- [ ] `docker-compose` for the full stack (incl. PostgreSQL).
-- [ ] GitHub Actions CI: lint + tests on every push.
-- [ ] Test coverage reporting.
-- [ ] Strong README: screenshots/GIF, architecture write-up, run instructions.
-- [ ] OpenAPI docs polished.
+## Phase 6 — Production polish (the resume payoff) ✅ DONE
+- [x] `docker-compose` for the full stack (Postgres + backend w/ migrations +
+      nginx-served frontend).
+- [x] GitHub Actions CI: backend lint (ruff) + format check (black) + pytest with
+      coverage; frontend typecheck + build, on every push/PR.
+- [x] Test coverage reporting (~98%, `pytest --cov`).
+- [x] Strong README: features, stack, architecture, Docker + local setup.
+- [x] OpenAPI docs polished (title/version/description + tags).
+- [ ] Nice-to-have: screenshots/GIF embedded in the README (backlog).
 
 ---
 
@@ -112,5 +115,10 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
 - **Phase 5 — done.** All four formats implemented behind the `FormatStrategy`
   interface: single-elim, double-elim, round-robin, swiss. User picks the format
   at creation. 100 backend tests; each format verified in-browser.
+- **Phase 6 — done.** Dockerized full stack (Postgres + backend + frontend),
+  GitHub Actions CI (lint + tests + build), ~98% coverage, expanded README,
+  polished OpenAPI metadata.
 
-Currently at: **Phase 6 — Production polish (next).**
+**All planned phases (0–6) are complete.** Future work lives in
+[BACKLOG.md](BACKLOG.md) (e.g. double-elim byes, teams, deploy/hosting,
+README screenshots).
