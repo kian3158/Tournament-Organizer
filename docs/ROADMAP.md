@@ -71,7 +71,7 @@ Live spectating.
 - [x] Frontend subscribes (`useBracketSocket`) and updates the bracket live.
 - Verified in-browser: a reported result is pushed to a connected client.
 
-## Phase 5 — More formats (breadth, on a solid base)
+## Phase 5 — More formats (breadth, on a solid base) ✅ DONE
 Add one at a time on the `FormatStrategy` interface, each fully tested:
 
 - [x] `FormatStrategy` interface; single-elim as an implementation (Phase 1).
@@ -83,7 +83,9 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
 - [x] **Round-robin** — circle-method scheduling (every pair once, no double
       bookings per round), standings table (played/wins/losses/points), completes
       when all matches are played. Standings + schedule frontend view. Verified.
-- [ ] **Swiss** (record-based pairing).
+- [x] **Swiss** — fold pairing for round 1, then rounds generated incrementally
+      after each completes, pairing by record with rematch avoidance and byes;
+      ceil(log2 n) rounds. Reuses the standings view. Verified in-browser.
 
 ## Phase 6 — Production polish (the resume payoff)
 - [ ] `docker-compose` for the full stack (incl. PostgreSQL).
@@ -107,7 +109,8 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
 - **Phase 4 — done.** WebSocket channel per tournament; the server pushes live
   bracket updates on generate/result, and the frontend subscribes for live
   spectating. Verified in-browser.
-- **Phase 5 — in progress.** Double-elimination and round-robin done. Swiss is
-  the last remaining format.
+- **Phase 5 — done.** All four formats implemented behind the `FormatStrategy`
+  interface: single-elim, double-elim, round-robin, swiss. User picks the format
+  at creation. 100 backend tests; each format verified in-browser.
 
-Currently at: **Phase 5 — swiss next.**
+Currently at: **Phase 6 — Production polish (next).**
