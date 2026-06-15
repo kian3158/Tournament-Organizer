@@ -39,3 +39,16 @@ def client(db):
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()
+
+
+def register_and_login(client, email="organizer@example.com", password="password123"):
+    """Register a user and return Authorization headers for them."""
+    client.post("/auth/register", json={"email": email, "password": password})
+    res = client.post("/auth/login", json={"email": email, "password": password})
+    token = res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def auth_headers(client):
+    return register_and_login(client)
