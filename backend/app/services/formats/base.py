@@ -4,12 +4,13 @@ from typing import Optional
 
 
 class Bracket:
-    """String labels stored on Match.bracket for double elimination."""
+    """String labels stored on Match.bracket to distinguish formats/sections."""
 
     WINNERS = "WINNERS"
     LOSERS = "LOSERS"
     GRAND_FINAL = "GRAND_FINAL"
     GRAND_FINAL_RESET = "GRAND_FINAL_RESET"
+    ROUND_ROBIN = "ROUND_ROBIN"
 
 
 @dataclass

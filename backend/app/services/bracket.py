@@ -9,13 +9,15 @@ from .formats import (
     Bracket,
     DoubleEliminationFormat,
     FormatStrategy,
+    RoundRobinFormat,
     SingleEliminationFormat,
 )
 
-# Format enum -> strategy. Round-robin and swiss are wired in later.
+# Format enum -> strategy. Swiss is wired in later.
 _STRATEGIES: dict[TournamentFormat, type[FormatStrategy]] = {
     TournamentFormat.SINGLE_ELIM: SingleEliminationFormat,
     TournamentFormat.DOUBLE_ELIM: DoubleEliminationFormat,
+    TournamentFormat.ROUND_ROBIN: RoundRobinFormat,
 }
 
 
@@ -115,6 +117,9 @@ class BracketService:
             raise BracketError("Match result has already been reported.")
 
         self._record_winner(db, match, winner_id)
+        # Flush so completion checks (which query the DB) see this result;
+        # the session uses autoflush=False.
+        db.flush()
         self._handle_completion(db, match, winner_id)
 
         db.flush()
@@ -171,6 +176,18 @@ class BracketService:
                     reset.player_b_id = match.player_b_id
         elif match.bracket == Bracket.GRAND_FINAL_RESET:
             tournament.status = TournamentStatus.COMPLETED
+        elif match.bracket == Bracket.ROUND_ROBIN:
+            # Complete once every scheduled match has a result.
+            remaining = (
+                db.query(Match)
+                .filter(
+                    Match.tournament_id == match.tournament_id,
+                    Match.winner_id.is_(None),
+                )
+                .count()
+            )
+            if remaining == 0:
+                tournament.status = TournamentStatus.COMPLETED
         elif match.next_match_id is None:
             # Single-elimination final (no bracket label).
             tournament.status = TournamentStatus.COMPLETED
