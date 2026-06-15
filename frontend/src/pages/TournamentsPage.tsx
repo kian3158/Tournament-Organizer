@@ -53,6 +53,7 @@ export default function TournamentsPage() {
           >
             <option value="SINGLE_ELIM">Single elimination</option>
             <option value="DOUBLE_ELIM">Double elimination</option>
+            <option value="ROUND_ROBIN">Round robin</option>
           </select>
           <button
             type="submit"
