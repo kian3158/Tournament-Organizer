@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Bracket } from "../api/types";
+import BracketView from "../components/Bracket";
 import ParticipantManager from "../components/ParticipantManager";
 
 export default function TournamentPage() {
@@ -25,6 +26,16 @@ export default function TournamentPage() {
     setError(null);
     try {
       await api.generateBracket(tournamentId);
+      await refresh();
+    } catch (e) {
+      setError(String((e as Error).message));
+    }
+  }
+
+  async function handlePickWinner(matchId: number, winnerId: number) {
+    setError(null);
+    try {
+      await api.reportResult(matchId, winnerId);
       await refresh();
     } catch (e) {
       setError(String((e as Error).message));
@@ -68,6 +79,8 @@ export default function TournamentPage() {
         editable={isDraft}
         onChange={refresh}
       />
+
+      <BracketView data={bracket} onPickWinner={handlePickWinner} />
     </div>
   );
 }

@@ -18,3 +18,4 @@ build/
 
 # Claude working notes (local, not committed)
 AGENT_NOTES.md
+.claude/
