@@ -80,7 +80,9 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
       frontend rendering. Power-of-two only for now (byes → backlog). Verified
       in-browser (winner advances, loser drops, reset path tested).
 - [x] Let the user pick the format at tournament creation.
-- [ ] **Round-robin** (standings/points).
+- [x] **Round-robin** — circle-method scheduling (every pair once, no double
+      bookings per round), standings table (played/wins/losses/points), completes
+      when all matches are played. Standings + schedule frontend view. Verified.
 - [ ] **Swiss** (record-based pairing).
 
 ## Phase 6 — Production polish (the resume payoff)
@@ -105,8 +107,7 @@ Add one at a time on the `FormatStrategy` interface, each fully tested:
 - **Phase 4 — done.** WebSocket channel per tournament; the server pushes live
   bracket updates on generate/result, and the frontend subscribes for live
   spectating. Verified in-browser.
-- **Phase 5 — in progress.** Double-elimination done (winners/losers brackets +
-  grand-final reset, format picker at creation, bracket-aware UI). Round-robin
-  and swiss still to come.
+- **Phase 5 — in progress.** Double-elimination and round-robin done. Swiss is
+  the last remaining format.
 
-Currently at: **Phase 5 — round-robin next.**
+Currently at: **Phase 5 — swiss next.**
