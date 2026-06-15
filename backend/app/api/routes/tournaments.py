@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.api.bracket import build_bracket_read
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.tournament import Tournament
@@ -13,6 +14,7 @@ from app.schemas import (
 )
 from app.services.bracket import BracketService
 from app.services.exceptions import BracketError
+from app.services.realtime import manager
 
 router = APIRouter(prefix="/tournaments", tags=["tournaments"])
 
@@ -54,7 +56,7 @@ def get_tournament(tournament_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{tournament_id}/generate", response_model=BracketRead)
-def generate_bracket(
+async def generate_bracket(
     tournament_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -67,19 +69,12 @@ def generate_bracket(
     except BracketError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     db.commit()
-    return _build_bracket(db, tournament_id)
+    bracket = build_bracket_read(db, tournament_id)
+    await manager.broadcast(tournament_id, bracket.model_dump(mode="json"))
+    return bracket
 
 
 @router.get("/{tournament_id}/bracket", response_model=BracketRead)
 def get_bracket(tournament_id: int, db: Session = Depends(get_db)):
     _get_tournament_or_404(db, tournament_id)
-    return _build_bracket(db, tournament_id)
-
-
-def _build_bracket(db: Session, tournament_id: int) -> BracketRead:
-    tournament = _get_tournament_or_404(db, tournament_id)
-    return BracketRead(
-        tournament=tournament,
-        participants=crud.participant.list_for_tournament(db, tournament_id),
-        matches=crud.match.list_for_tournament(db, tournament_id),
-    )
+    return build_bracket_read(db, tournament_id)
