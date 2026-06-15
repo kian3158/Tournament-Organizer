@@ -5,12 +5,17 @@ from app.models.participant import Participant
 from app.models.tournament import Tournament, TournamentFormat, TournamentStatus
 
 from .exceptions import BracketError
-from .formats import FormatStrategy, SingleEliminationFormat
+from .formats import (
+    Bracket,
+    DoubleEliminationFormat,
+    FormatStrategy,
+    SingleEliminationFormat,
+)
 
-# Format enum -> strategy. Only single-elimination is implemented in Phase 1;
-# the others are wired in later phases.
+# Format enum -> strategy. Round-robin and swiss are wired in later.
 _STRATEGIES: dict[TournamentFormat, type[FormatStrategy]] = {
     TournamentFormat.SINGLE_ELIM: SingleEliminationFormat,
+    TournamentFormat.DOUBLE_ELIM: DoubleEliminationFormat,
 }
 
 
@@ -43,9 +48,23 @@ class BracketService:
         if len(ordered) < 2:
             raise BracketError("Need at least 2 participants to generate a bracket.")
 
-        plans = self._strategy_for(tournament).build([p.id for p in ordered])
+        try:
+            plans = self._strategy_for(tournament).build([p.id for p in ordered])
+        except ValueError as exc:
+            raise BracketError(str(exc))
 
-        # Create rows first, flush to assign ids, then wire next-match pointers.
+        index_to_match = self._create_matches(db, tournament, plans)
+        self._wire_pointers(plans, index_to_match)
+        db.flush()
+        self._auto_advance_byes(db, plans, index_to_match)
+
+        tournament.status = TournamentStatus.ONGOING
+        db.flush()
+        return list(index_to_match.values())
+
+    def _create_matches(
+        self, db: Session, tournament: Tournament, plans
+    ) -> dict[int, Match]:
         index_to_match: dict[int, Match] = {}
         for plan in plans:
             match = Match(
@@ -53,19 +72,27 @@ class BracketService:
                 round_number=plan.round_number,
                 player_a_id=plan.player_a,
                 player_b_id=plan.player_b,
+                bracket=plan.bracket,
             )
             db.add(match)
             index_to_match[plan.index] = match
         db.flush()
+        return index_to_match
 
+    def _wire_pointers(self, plans, index_to_match: dict[int, Match]) -> None:
         for plan in plans:
+            match = index_to_match[plan.index]
             if plan.next_index is not None:
-                match = index_to_match[plan.index]
                 match.next_match_id = index_to_match[plan.next_index].id
                 match.next_match_slot = MatchSlot(plan.next_slot)
-        db.flush()
+            if plan.loser_next_index is not None:
+                match.loser_next_match_id = index_to_match[plan.loser_next_index].id
+                match.loser_next_match_slot = MatchSlot(plan.loser_next_slot)
 
-        # Auto-advance first-round byes (exactly one side present).
+    def _auto_advance_byes(
+        self, db: Session, plans, index_to_match: dict[int, Match]
+    ) -> None:
+        """Auto-resolve first-round byes (exactly one side present)."""
         for plan in plans:
             if plan.round_number != 1:
                 continue
@@ -74,12 +101,8 @@ class BracketService:
                 winner_id = a if a is not None else b
                 self._record_winner(db, index_to_match[plan.index], winner_id)
 
-        tournament.status = TournamentStatus.ONGOING
-        db.flush()
-        return list(index_to_match.values())
-
     def advance_match(self, db: Session, match_id: int, winner_id: int) -> Match:
-        """Report the winner of a match and propagate them to the next round."""
+        """Report the winner of a match and propagate the result."""
         match = db.get(Match, match_id)
         if match is None:
             raise BracketError(f"Match {match_id} not found.")
@@ -92,25 +115,62 @@ class BracketService:
             raise BracketError("Match result has already been reported.")
 
         self._record_winner(db, match, winner_id)
-
-        # Reaching the final (no downstream match) completes the tournament.
-        if match.next_match_id is None:
-            tournament = db.get(Tournament, match.tournament_id)
-            if tournament is not None:
-                tournament.status = TournamentStatus.COMPLETED
+        self._handle_completion(db, match, winner_id)
 
         db.flush()
         return match
 
     def _record_winner(self, db: Session, match: Match, winner_id: int) -> None:
-        """Set a match winner and place them into the downstream match slot."""
+        """Set the winner and route winner (and loser, if any) downstream."""
         match.winner_id = winner_id
-        if match.next_match_id is None:
+
+        if match.next_match_id is not None:
+            nxt = db.get(Match, match.next_match_id)
+            if nxt is not None:
+                if match.next_match_slot == MatchSlot.A:
+                    nxt.player_a_id = winner_id
+                else:
+                    nxt.player_b_id = winner_id
+
+        if match.loser_next_match_id is not None:
+            loser_id = (
+                match.player_a_id
+                if winner_id == match.player_b_id
+                else match.player_b_id
+            )
+            if loser_id is not None:
+                lnxt = db.get(Match, match.loser_next_match_id)
+                if lnxt is not None:
+                    if match.loser_next_match_slot == MatchSlot.A:
+                        lnxt.player_a_id = loser_id
+                    else:
+                        lnxt.player_b_id = loser_id
+
+    def _handle_completion(self, db: Session, match: Match, winner_id: int) -> None:
+        """Mark the tournament complete (or trigger a grand-final reset)."""
+        tournament = db.get(Tournament, match.tournament_id)
+        if tournament is None:
             return
-        nxt = db.get(Match, match.next_match_id)
-        if nxt is None:
-            return
-        if match.next_match_slot == MatchSlot.A:
-            nxt.player_a_id = winner_id
-        else:
-            nxt.player_b_id = winner_id
+
+        if match.bracket == Bracket.GRAND_FINAL:
+            # player_a is the winners champion; if they win, they're undefeated.
+            if winner_id == match.player_a_id:
+                tournament.status = TournamentStatus.COMPLETED
+            else:
+                # Losers champion won — both now have one loss; play the reset.
+                reset = (
+                    db.query(Match)
+                    .filter(
+                        Match.tournament_id == match.tournament_id,
+                        Match.bracket == Bracket.GRAND_FINAL_RESET,
+                    )
+                    .first()
+                )
+                if reset is not None:
+                    reset.player_a_id = match.player_a_id
+                    reset.player_b_id = match.player_b_id
+        elif match.bracket == Bracket.GRAND_FINAL_RESET:
+            tournament.status = TournamentStatus.COMPLETED
+        elif match.next_match_id is None:
+            # Single-elimination final (no bracket label).
+            tournament.status = TournamentStatus.COMPLETED

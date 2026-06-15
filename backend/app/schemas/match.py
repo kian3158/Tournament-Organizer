@@ -14,6 +14,9 @@ class MatchRead(BaseModel):
     winner_id: Optional[int]
     next_match_id: Optional[int]
     next_match_slot: Optional[str]
+    bracket: Optional[str]
+    loser_next_match_id: Optional[int]
+    loser_next_match_slot: Optional[str]
 
 
 class ResultReport(BaseModel):
