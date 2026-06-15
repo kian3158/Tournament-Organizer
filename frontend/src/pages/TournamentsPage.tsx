@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import type { Tournament } from "../api/types";
+import type { Tournament, TournamentFormat } from "../api/types";
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [name, setName] = useState("");
+  const [format, setFormat] = useState<TournamentFormat>("SINGLE_ELIM");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +27,7 @@ export default function TournamentsPage() {
     if (!name.trim()) return;
     setError(null);
     try {
-      await api.createTournament(name.trim());
+      await api.createTournament(name.trim(), format);
       setName("");
       await refresh();
     } catch (e) {
@@ -45,6 +46,14 @@ export default function TournamentsPage() {
             placeholder="Tournament name"
             className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-4 py-2 outline-none focus:border-blue-500"
           />
+          <select
+            value={format}
+            onChange={(e) => setFormat(e.target.value as TournamentFormat)}
+            className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 outline-none focus:border-blue-500"
+          >
+            <option value="SINGLE_ELIM">Single elimination</option>
+            <option value="DOUBLE_ELIM">Double elimination</option>
+          </select>
           <button
             type="submit"
             className="rounded-md bg-blue-600 px-5 py-2 font-medium hover:bg-blue-500"
