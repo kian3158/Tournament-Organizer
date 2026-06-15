@@ -11,13 +11,16 @@ from .formats import (
     FormatStrategy,
     RoundRobinFormat,
     SingleEliminationFormat,
+    SwissFormat,
+    total_rounds,
 )
 
-# Format enum -> strategy. Swiss is wired in later.
+# Format enum -> strategy.
 _STRATEGIES: dict[TournamentFormat, type[FormatStrategy]] = {
     TournamentFormat.SINGLE_ELIM: SingleEliminationFormat,
     TournamentFormat.DOUBLE_ELIM: DoubleEliminationFormat,
     TournamentFormat.ROUND_ROBIN: RoundRobinFormat,
+    TournamentFormat.SWISS: SwissFormat,
 }
 
 
@@ -188,6 +191,91 @@ class BracketService:
             )
             if remaining == 0:
                 tournament.status = TournamentStatus.COMPLETED
+        elif match.bracket == Bracket.SWISS:
+            self._advance_swiss(db, tournament, match.round_number)
         elif match.next_match_id is None:
             # Single-elimination final (no bracket label).
             tournament.status = TournamentStatus.COMPLETED
+
+    def _advance_swiss(
+        self, db: Session, tournament: Tournament, round_number: int
+    ) -> None:
+        """When a swiss round finishes, generate the next one or complete."""
+        remaining = (
+            db.query(Match)
+            .filter(
+                Match.tournament_id == tournament.id,
+                Match.round_number == round_number,
+                Match.bracket == Bracket.SWISS,
+                Match.winner_id.is_(None),
+            )
+            .count()
+        )
+        if remaining > 0:
+            return  # round still in progress
+
+        participants = (
+            db.query(Participant)
+            .filter(Participant.tournament_id == tournament.id)
+            .all()
+        )
+        if round_number >= total_rounds(len(participants)):
+            tournament.status = TournamentStatus.COMPLETED
+            return
+
+        self._generate_swiss_round(db, tournament, participants, round_number + 1)
+
+    def _generate_swiss_round(
+        self,
+        db: Session,
+        tournament: Tournament,
+        participants: list[Participant],
+        round_number: int,
+    ) -> None:
+        matches = (
+            db.query(Match)
+            .filter(
+                Match.tournament_id == tournament.id,
+                Match.bracket == Bracket.SWISS,
+            )
+            .all()
+        )
+
+        wins: dict[int, int] = {p.id: 0 for p in participants}
+        played_pairs: set[frozenset] = set()
+        byes_had: set[int] = set()
+        for m in matches:
+            if m.winner_id is not None:
+                wins[m.winner_id] = wins.get(m.winner_id, 0) + 1
+            if m.player_a_id is not None and m.player_b_id is not None:
+                played_pairs.add(frozenset((m.player_a_id, m.player_b_id)))
+            elif m.player_a_id is not None and m.player_b_id is None:
+                byes_had.add(m.player_a_id)
+
+        seed_of = {
+            p.id: (p.seed if p.seed is not None else 10**9) for p in participants
+        }
+        ordered = sorted(
+            (p.id for p in participants),
+            key=lambda pid: (-wins.get(pid, 0), seed_of[pid], pid),
+        )
+
+        pairings = SwissFormat().next_round_pairings(ordered, played_pairs, byes_had)
+
+        new_matches: list[Match] = []
+        for a, b in pairings:
+            m = Match(
+                tournament_id=tournament.id,
+                round_number=round_number,
+                player_a_id=a,
+                player_b_id=b,
+                bracket=Bracket.SWISS,
+            )
+            db.add(m)
+            new_matches.append(m)
+        db.flush()
+
+        # Auto-resolve byes (no opponent) so they count as a win immediately.
+        for m in new_matches:
+            if m.player_b_id is None and m.player_a_id is not None:
+                m.winner_id = m.player_a_id
