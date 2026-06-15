@@ -22,7 +22,7 @@ export default function MatchCard({
   return (
     <div className="w-52 overflow-hidden rounded-md border border-gray-700 bg-gray-900 text-sm">
       <Slot
-        label={slotLabel(match.player_a_id, match.round_number)}
+        label={slotLabel(match, match.player_a_id)}
         playerId={match.player_a_id}
         isWinner={match.winner_id != null && match.winner_id === match.player_a_id}
         nameOf={nameOf}
@@ -31,7 +31,7 @@ export default function MatchCard({
       />
       <div className="border-t border-gray-700" />
       <Slot
-        label={slotLabel(match.player_b_id, match.round_number)}
+        label={slotLabel(match, match.player_b_id)}
         playerId={match.player_b_id}
         isWinner={match.winner_id != null && match.winner_id === match.player_b_id}
         nameOf={nameOf}
@@ -42,9 +42,14 @@ export default function MatchCard({
   );
 }
 
-function slotLabel(playerId: number | null, round: number): string | null {
+function slotLabel(match: Match, playerId: number | null): string | null {
   if (playerId != null) return null;
-  return round === 1 ? "BYE" : "TBD";
+  // Empty first-round slots are byes only in elimination round 1; everywhere
+  // else (later rounds, losers bracket, grand final) the slot is pending.
+  const isElimFirstRound =
+    match.round_number === 1 &&
+    (match.bracket == null || match.bracket === "WINNERS");
+  return isElimFirstRound ? "BYE" : "TBD";
 }
 
 interface SlotProps {

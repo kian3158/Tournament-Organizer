@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Bracket as BracketData } from "../api/types";
+import type { Match, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
 interface Props {
@@ -8,38 +8,21 @@ interface Props {
   onPickWinner: (matchId: number, winnerId: number) => void;
 }
 
+type NameOf = (id: number | null) => string;
+
 export default function Bracket({ data, canReport, onPickWinner }: Props) {
   const { tournament, participants, matches } = data;
 
-  const nameOf = useMemo(() => {
+  const nameOf = useMemo<NameOf>(() => {
     const byId = new Map(participants.map((p) => [p.id, p.name]));
-    return (id: number | null) =>
-      id == null ? "" : (byId.get(id) ?? `#${id}`);
+    return (id) => (id == null ? "" : (byId.get(id) ?? `#${id}`));
   }, [participants]);
-
-  const rounds = useMemo(() => {
-    const byRound = new Map<number, typeof matches>();
-    for (const m of matches) {
-      const list = byRound.get(m.round_number) ?? [];
-      list.push(m);
-      byRound.set(m.round_number, list);
-    }
-    return [...byRound.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([round, ms]) => ({
-        round,
-        matches: ms.sort((a, b) => a.id - b.id),
-      }));
-  }, [matches]);
 
   if (matches.length === 0) return null;
 
-  const lastRound = rounds[rounds.length - 1].round;
-
+  const isDouble = matches.some((m) => m.bracket);
   const champion =
-    tournament.status === "COMPLETED"
-      ? (rounds.at(-1)?.matches[0]?.winner_id ?? null)
-      : null;
+    tournament.status === "COMPLETED" ? findChampion(matches) : null;
 
   return (
     <section>
@@ -51,26 +34,155 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
         </div>
       )}
 
-      <div className="flex gap-10 overflow-x-auto pb-4">
-        {rounds.map(({ round, matches }) => (
-          <div key={round} className="flex flex-col justify-around gap-4">
-            <h3 className="text-center text-sm font-semibold uppercase tracking-wide text-gray-400">
-              {roundLabel(round, lastRound)}
-            </h3>
-            {matches.map((m) => (
-              <MatchCard
-                key={m.id}
-                match={m}
-                nameOf={nameOf}
-                canReport={canReport}
-                onPickWinner={onPickWinner}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
+      {isDouble ? (
+        <DoubleElimination
+          matches={matches}
+          nameOf={nameOf}
+          canReport={canReport}
+          onPickWinner={onPickWinner}
+        />
+      ) : (
+        <SingleElimination
+          matches={matches}
+          nameOf={nameOf}
+          canReport={canReport}
+          onPickWinner={onPickWinner}
+        />
+      )}
     </section>
   );
+}
+
+interface SectionProps {
+  matches: Match[];
+  nameOf: NameOf;
+  canReport: boolean;
+  onPickWinner: (matchId: number, winnerId: number) => void;
+}
+
+function SingleElimination({ matches, ...rest }: SectionProps) {
+  const rounds = groupByRound(matches);
+  const lastRound = rounds[rounds.length - 1].round;
+  return (
+    <RoundColumns
+      rounds={rounds}
+      label={(round) => roundLabel(round, lastRound)}
+      {...rest}
+    />
+  );
+}
+
+function DoubleElimination({ matches, ...rest }: SectionProps) {
+  const winners = matches.filter((m) => m.bracket === "WINNERS");
+  const losers = matches.filter((m) => m.bracket === "LOSERS");
+  // Hide the reset match until it's actually needed (players assigned).
+  const finals = matches.filter(
+    (m) =>
+      m.bracket === "GRAND_FINAL" ||
+      (m.bracket === "GRAND_FINAL_RESET" &&
+        (m.player_a_id != null || m.player_b_id != null))
+  );
+
+  return (
+    <div className="space-y-8">
+      <BracketSection title="Winners bracket" matches={winners} {...rest} />
+      <BracketSection title="Losers bracket" matches={losers} {...rest} />
+      <BracketSection
+        title="Grand final"
+        matches={finals}
+        label={(round, all) =>
+          all.length > 1 && round === all[all.length - 1] ? "Reset" : "Final"
+        }
+        {...rest}
+      />
+    </div>
+  );
+}
+
+interface BracketSectionProps extends SectionProps {
+  title: string;
+  label?: (round: number, allRounds: number[]) => string;
+}
+
+function BracketSection({
+  title,
+  matches,
+  label,
+  ...rest
+}: BracketSectionProps) {
+  if (matches.length === 0) return null;
+  const rounds = groupByRound(matches);
+  return (
+    <div>
+      <h3 className="mb-3 text-lg font-semibold text-gray-300">{title}</h3>
+      <RoundColumns rounds={rounds} label={label} {...rest} />
+    </div>
+  );
+}
+
+interface RoundColumnsProps {
+  rounds: { round: number; matches: Match[] }[];
+  label?: (round: number, allRounds: number[]) => string;
+  nameOf: NameOf;
+  canReport: boolean;
+  onPickWinner: (matchId: number, winnerId: number) => void;
+}
+
+function RoundColumns({
+  rounds,
+  label,
+  nameOf,
+  canReport,
+  onPickWinner,
+}: RoundColumnsProps) {
+  const roundNumbers = rounds.map((r) => r.round);
+  return (
+    <div className="flex gap-10 overflow-x-auto pb-4">
+      {rounds.map(({ round, matches }) => (
+        <div key={round} className="flex flex-col justify-around gap-4">
+          <h4 className="text-center text-sm font-semibold uppercase tracking-wide text-gray-400">
+            {label ? label(round, roundNumbers) : `Round ${round}`}
+          </h4>
+          {matches.map((m) => (
+            <MatchCard
+              key={m.id}
+              match={m}
+              nameOf={nameOf}
+              canReport={canReport}
+              onPickWinner={onPickWinner}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function groupByRound(matches: Match[]): { round: number; matches: Match[] }[] {
+  const byRound = new Map<number, Match[]>();
+  for (const m of matches) {
+    const list = byRound.get(m.round_number) ?? [];
+    list.push(m);
+    byRound.set(m.round_number, list);
+  }
+  return [...byRound.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([round, ms]) => ({
+      round,
+      matches: ms.sort((a, b) => a.id - b.id),
+    }));
+}
+
+function findChampion(matches: Match[]): number | null {
+  const reset = matches.find((m) => m.bracket === "GRAND_FINAL_RESET");
+  if (reset?.winner_id != null) return reset.winner_id;
+  const grandFinal = matches.find((m) => m.bracket === "GRAND_FINAL");
+  if (grandFinal?.winner_id != null) return grandFinal.winner_id;
+  // Single elimination: the final is the match with no next.
+  const final = matches.find(
+    (m) => m.bracket == null && m.next_match_id == null
+  );
+  return final?.winner_id ?? null;
 }
 
 function roundLabel(round: number, lastRound: number): string {

@@ -42,6 +42,14 @@ export interface Match {
   winner_id: number | null;
   next_match_id: number | null;
   next_match_slot: "A" | "B" | null;
+  bracket:
+    | "WINNERS"
+    | "LOSERS"
+    | "GRAND_FINAL"
+    | "GRAND_FINAL_RESET"
+    | null;
+  loser_next_match_id: number | null;
+  loser_next_match_slot: "A" | "B" | null;
 }
 
 export interface Bracket {
