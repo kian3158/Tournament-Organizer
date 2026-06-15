@@ -13,7 +13,7 @@ The top-level container for a competition.
 | id         | int, PK             | |
 | name       | string, required    | |
 | status     | enum                | `DRAFT` → `ONGOING` → `COMPLETED` |
-| format     | enum _(planned)_    | `SINGLE_ELIM`, `DOUBLE_ELIM`, `ROUND_ROBIN`, `SWISS` |
+| format     | enum                | `SINGLE_ELIM`, `DOUBLE_ELIM`, `ROUND_ROBIN`, `SWISS` (default `SINGLE_ELIM`) |
 | owner_id   | int, nullable       | FK to User once auth exists; reserved now |
 | created_at | datetime _(planned)_| |
 
@@ -27,11 +27,8 @@ players don't log in.
 | id             | int, PK          | |
 | name           | string, required | |
 | type           | string           | `PLAYER` (default) or `TEAM` later |
-| tournament_id  | int, FK _(planned)_ | participants currently aren't scoped to a tournament — this needs to be added |
-| seed           | int, nullable _(planned)_ | for seeding the bracket |
-
-> **Known gap:** `Participant` has no `tournament_id` yet. It must be scoped to a
-> tournament. Tracked in [ROADMAP.md](ROADMAP.md) Phase 1.
+| tournament_id  | int, FK          | scopes the participant to its tournament |
+| seed           | int, nullable    | lower = stronger; drives bracket seeding |
 
 ### Match
 A single game between two participants, and its place in the bracket.

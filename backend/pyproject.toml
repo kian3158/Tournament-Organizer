@@ -17,6 +17,7 @@ psycopg2-binary = "^2.9.11"
 [tool.poetry.dev-dependencies]
 black = "^24.3.0"
 pytest = "^8.3.0"
+httpx = "^0.27.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.14"
@@ -27,5 +28,11 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "W", "C90"]
 exclude = ["alembic", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["app/tests"]

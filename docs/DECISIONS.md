@@ -3,6 +3,20 @@
 A lightweight decision log so we have a single source of truth and don't
 re-litigate or "make things up" later. Newest decisions at the top.
 
+## Decisions (2026-06-15, Phase 1)
+
+7. **Bracket math is a pure function, separate from persistence.**
+   `FormatStrategy.build()` returns DB-free `MatchPlan` objects; `BracketService`
+   persists them and handles advancement. This makes the algorithm unit-testable
+   without a database and keeps the strategy classes simple.
+8. **Naming:** model enum = `TournamentFormat`; strategy interface =
+   `FormatStrategy` (avoids a name clash and separates value from behaviour).
+9. **Byes go to the top seeds and auto-advance at generation time.** A
+   non-power-of-two field is padded up to the next power of two; the strongest
+   seeds get the byes and are advanced into round 2 immediately.
+10. **Alembic migrations use batch mode** so they apply on SQLite (dev) as well
+    as PostgreSQL (target) — plain `ALTER ... ADD CONSTRAINT` fails on SQLite.
+
 ## Decisions (2026-06-15)
 
 1. **Primary goal: depth of engineering.** Quality, tests, CI, clean

@@ -11,10 +11,11 @@ Tournament/
 │       ├── core/        config / settings
 │       ├── db/          engine, session, Base
 │       ├── models/      SQLAlchemy ORM models
-│       ├── schemas/     Pydantic request/response models   (to be added)
-│       ├── crud/        DB access helpers                   (to be added)
-│       ├── services/    business logic (bracket engine)
-│       ├── api/         FastAPI routers / endpoints          (to be added)
+│       ├── schemas/     Pydantic request/response models
+│       ├── crud/        DB access helpers
+│       ├── services/    business logic (bracket engine + formats/)
+│       ├── api/         FastAPI routers / endpoints
+│       ├── tests/       pytest suite (pure algorithm, service, API)
 │       └── main.py      app entrypoint
 ├── frontend/         React + TypeScript + Vite + TailwindCSS
 └── docs/             source of truth for product & engineering decisions
@@ -47,21 +48,26 @@ swiss). To keep this clean and testable, formats are implemented behind a common
 **strategy interface** rather than branching logic scattered everywhere.
 
 ```
-TournamentFormat (interface)
-├── generate(tournament, participants) -> creates matches
-├── advance(match, winner)             -> propagates result, updates state
-└── standings(tournament)              -> current ranking (esp. round-robin/swiss)
+FormatStrategy (interface, services/formats/base.py)
+└── build(participant_ids) -> list[MatchPlan]   # pure, DB-free bracket math
 
 implementations:
-├── SingleEliminationFormat   (built first, to production standard)
-├── DoubleEliminationFormat
-├── RoundRobinFormat
-└── SwissFormat
+├── SingleEliminationFormat   (built — production standard)
+├── DoubleEliminationFormat   (planned)
+├── RoundRobinFormat          (planned)
+└── SwissFormat               (planned)
 ```
 
-A tournament stores which format it uses; the service layer dispatches to the
-right strategy. Adding a format = adding a class + tests, not rewriting the API
-or UI.
+`build()` is intentionally **pure**: it returns `MatchPlan` objects (with local
+indices and next-match pointers) and touches no database, so the bracket math is
+unit-tested in isolation. `BracketService` (services/bracket.py) persists those
+plans into `Match` rows, wires the self-referential `next_match_id` links,
+auto-advances byes, and handles result reporting / tournament completion.
+
+Naming note: the model enum is `TournamentFormat` (the value stored on a
+tournament); the strategy interface is `FormatStrategy` (the behaviour). A
+tournament stores its format; the service dispatches to the matching strategy.
+Adding a format = adding a strategy class + tests, not rewriting the API or UI.
 
 ## Real-time (WebSockets)
 

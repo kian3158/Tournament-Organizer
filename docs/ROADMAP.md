@@ -26,20 +26,21 @@ Get a green baseline. Nothing can be built or shown until this is solid.
 - [ ] First Alembic migration that actually creates the tables; confirm it runs.
 - [ ] Commit a clean baseline.
 
-## Phase 1 — Tournament engine: single-elimination (the core)
+## Phase 1 — Tournament engine: single-elimination (the core) ✅ DONE
 The algorithmically interesting heart of the app.
 
-- [ ] Add `tournament_id` (and `seed`) to `Participant`.
-- [ ] Add `format` to `Tournament`.
-- [ ] Pydantic schemas + a thin CRUD layer.
-- [ ] `SingleEliminationFormat.generate()` — seeding + byes for non-power-of-two
+- [x] Add `tournament_id` (and `seed`) to `Participant`.
+- [x] Add `format` to `Tournament`.
+- [x] Pydantic schemas + a thin CRUD layer.
+- [x] `SingleEliminationFormat.build()` — seeding + byes for non-power-of-two
       participant counts.
-- [ ] `advance()` — propagate winner via `next_match_id`/`next_match_slot`,
+- [x] `advance()` — propagate winner via `next_match_id`/`next_match_slot`,
       auto-resolve byes, complete the tournament when the final is decided.
-- [ ] REST endpoints: create tournament, add participants, generate bracket,
+- [x] REST endpoints: create tournament, add participants, generate bracket,
       report result, get full bracket state.
-- [ ] **Thorough unit tests** on the bracket math: 2/4/5/8/16 players, odd
-      counts, byes, full run-through to a champion. This is where depth shows.
+- [x] **Thorough unit tests** on the bracket math: 2/4/5/8/16 players, odd
+      counts, byes, full run-through to a champion (38 tests across the pure
+      algorithm, the service, and the API).
 
 ## Phase 2 — Bracket UI
 Make it visible and usable.
@@ -83,5 +84,9 @@ tested:
 
 ## Status
 
-Currently at: **Phase 0 — not started.** The repo is a well-structured skeleton;
-see [DECISIONS.md](DECISIONS.md) for the current-state assessment.
+- **Phase 0 — done.** Foundation runs (backend + frontend boot, migrations apply).
+- **Phase 1 — done.** Single-elimination engine complete end to end: layered
+  backend (models → services → crud → schemas → api), pure seeding/bye algorithm,
+  bracket generation + result reporting + auto-completion, and 38 passing tests.
+
+Currently at: **Phase 2 — Bracket UI (next).**
