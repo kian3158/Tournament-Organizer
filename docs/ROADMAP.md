@@ -52,12 +52,16 @@ Make it visible and usable.
 - Verified end to end in the browser, including a 10-player bracket with byes
   played through to a champion.
 
-## Phase 3 — Auth & multi-user
+## Phase 3 — Auth & multi-user ✅ DONE
 Organizers own their tournaments. Participants stay account-free.
 
-- [ ] User model, registration/login, JWT, password hashing.
-- [ ] Tie `Tournament.owner_id` to the logged-in user; protect mutations.
-- [ ] Frontend auth flow (login/register, authed requests).
+- [x] User model, registration/login, JWT (PyJWT), password hashing (bcrypt).
+- [x] Tie `Tournament.owner_id` to the logged-in user; mutations require
+      ownership (create/add-participant/generate/report); reads stay public so
+      brackets are shareable. Listing is scoped to the current user.
+- [x] Frontend auth flow: auth context, login/register page, token in
+      localStorage, route guard, and organizer-only controls.
+- 50 backend tests (incl. auth + ownership); verified in-browser.
 
 ## Phase 4 — Real-time (WebSockets)
 Live spectating.
@@ -92,5 +96,7 @@ tested:
   bracket generation + result reporting + auto-completion, and 38 passing tests.
 - **Phase 2 — done.** React UI: tournament list/create, participant management,
   and an interactive bracket with click-to-report-winner. Verified in-browser.
+- **Phase 3 — done.** JWT auth (register/login), bcrypt hashing, tournaments
+  owned by users with ownership-protected mutations, and a frontend auth flow.
 
-Currently at: **Phase 3 — Users & Auth (next).**
+Currently at: **Phase 4 — Real-time (WebSockets) (next).**
