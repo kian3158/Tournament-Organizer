@@ -63,11 +63,13 @@ Organizers own their tournaments. Participants stay account-free.
       localStorage, route guard, and organizer-only controls.
 - 50 backend tests (incl. auth + ownership); verified in-browser.
 
-## Phase 4 — Real-time (WebSockets)
+## Phase 4 — Real-time (WebSockets) ✅ DONE
 Live spectating.
 
-- [ ] WebSocket channel per tournament; broadcast on result changes.
-- [ ] Frontend subscribes and updates the bracket live (optimistic UI).
+- [x] WebSocket channel per tournament (`/ws/tournaments/{id}`); snapshot on
+      connect, broadcast on generate + result changes (`ConnectionManager`).
+- [x] Frontend subscribes (`useBracketSocket`) and updates the bracket live.
+- Verified in-browser: a reported result is pushed to a connected client.
 
 ## Phase 5 — More formats (breadth, on a solid base)
 Refactor to a clean strategy interface, then add one at a time, each fully
@@ -98,5 +100,8 @@ tested:
   and an interactive bracket with click-to-report-winner. Verified in-browser.
 - **Phase 3 — done.** JWT auth (register/login), bcrypt hashing, tournaments
   owned by users with ownership-protected mutations, and a frontend auth flow.
+- **Phase 4 — done.** WebSocket channel per tournament; the server pushes live
+  bracket updates on generate/result, and the frontend subscribes for live
+  spectating. Verified in-browser.
 
-Currently at: **Phase 4 — Real-time (WebSockets) (next).**
+Currently at: **Phase 5 — More formats (next).**
