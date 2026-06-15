@@ -1,3 +1,14 @@
+export interface User {
+  id: number;
+  email: string;
+  created_at: string;
+}
+
+export interface Token {
+  access_token: string;
+  token_type: string;
+}
+
 export type TournamentStatus = "DRAFT" | "ONGOING" | "COMPLETED";
 
 export type TournamentFormat =
@@ -11,6 +22,7 @@ export interface Tournament {
   name: string;
   status: TournamentStatus;
   format: TournamentFormat;
+  owner_id: number | null;
 }
 
 export interface Participant {
