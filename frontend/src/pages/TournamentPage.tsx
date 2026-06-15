@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Bracket } from "../api/types";
+import { useAuth } from "../auth/AuthContext";
 import BracketView from "../components/Bracket";
 import ParticipantManager from "../components/ParticipantManager";
 
 export default function TournamentPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const tournamentId = Number(id);
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +48,9 @@ export default function TournamentPage() {
   if (!bracket) return <p className="text-gray-400">Loading…</p>;
 
   const { tournament, participants } = bracket;
+  const isOwner = user != null && tournament.owner_id === user.id;
   const isDraft = tournament.status === "DRAFT";
-  const canGenerate = isDraft && participants.length >= 2;
+  const canGenerate = isOwner && isDraft && participants.length >= 2;
 
   return (
     <div className="space-y-8">
@@ -59,7 +62,7 @@ export default function TournamentPage() {
           <h1 className="mt-2 text-2xl font-bold">{tournament.name}</h1>
           <p className="text-gray-400">{tournament.status}</p>
         </div>
-        {isDraft && (
+        {isOwner && isDraft && (
           <button
             onClick={handleGenerate}
             disabled={!canGenerate}
@@ -76,11 +79,15 @@ export default function TournamentPage() {
       <ParticipantManager
         tournamentId={tournamentId}
         participants={participants}
-        editable={isDraft}
+        editable={isOwner && isDraft}
         onChange={refresh}
       />
 
-      <BracketView data={bracket} onPickWinner={handlePickWinner} />
+      <BracketView
+        data={bracket}
+        canReport={isOwner && tournament.status === "ONGOING"}
+        onPickWinner={handlePickWinner}
+      />
     </div>
   );
 }

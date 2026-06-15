@@ -4,10 +4,11 @@ import MatchCard from "./MatchCard";
 
 interface Props {
   data: BracketData;
+  canReport: boolean;
   onPickWinner: (matchId: number, winnerId: number) => void;
 }
 
-export default function Bracket({ data, onPickWinner }: Props) {
+export default function Bracket({ data, canReport, onPickWinner }: Props) {
   const { tournament, participants, matches } = data;
 
   const nameOf = useMemo(() => {
@@ -34,7 +35,6 @@ export default function Bracket({ data, onPickWinner }: Props) {
   if (matches.length === 0) return null;
 
   const lastRound = rounds[rounds.length - 1].round;
-  const canReport = tournament.status === "ONGOING";
 
   const champion =
     tournament.status === "COMPLETED"
