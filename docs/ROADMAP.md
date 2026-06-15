@@ -42,13 +42,15 @@ The algorithmically interesting heart of the app.
       counts, byes, full run-through to a champion (38 tests across the pure
       algorithm, the service, and the API).
 
-## Phase 2 — Bracket UI
+## Phase 2 — Bracket UI ✅ DONE
 Make it visible and usable.
 
-- [ ] Typed API client.
-- [ ] Tournament list + create; participant management.
-- [ ] **Bracket visualization** (rounds → matches), click-to-report-winner for
-      the organizer, fast manual entry (in-person friendly).
+- [x] Typed API client (`frontend/src/api/`), CORS enabled on the backend.
+- [x] Tournament list + create; participant management (name + optional seed).
+- [x] **Bracket visualization** (rounds → matches, round labels, byes/TBD,
+      champion banner), click-to-report-winner for the organizer.
+- Verified end to end in the browser, including a 10-player bracket with byes
+  played through to a champion.
 
 ## Phase 3 — Auth & multi-user
 Organizers own their tournaments. Participants stay account-free.
@@ -88,5 +90,7 @@ tested:
 - **Phase 1 — done.** Single-elimination engine complete end to end: layered
   backend (models → services → crud → schemas → api), pure seeding/bye algorithm,
   bracket generation + result reporting + auto-completion, and 38 passing tests.
+- **Phase 2 — done.** React UI: tournament list/create, participant management,
+  and an interactive bracket with click-to-report-winner. Verified in-browser.
 
-Currently at: **Phase 2 — Bracket UI (next).**
+Currently at: **Phase 3 — Users & Auth (next).**
