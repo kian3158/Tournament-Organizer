@@ -1,7 +1,0 @@
-# ROADMAP
-
-Act I: Foundation
-Act II: Tournament Engine
-Act III: Bracket UI
-Act IV: Users & Auth
-Act V: Game Features

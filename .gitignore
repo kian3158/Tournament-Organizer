@@ -5,6 +5,9 @@ __pycache__/
 *.pyd
 .env
 
+# Local dev database
+*.db
+
 # Node
 node_modules/
 dist/
@@ -12,3 +15,6 @@ build/
 
 # VSCode
 .vscode/
+
+# Claude working notes (local, not committed)
+AGENT_NOTES.md
