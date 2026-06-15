@@ -18,6 +18,7 @@ class TournamentRead(BaseModel):
     name: str
     status: TournamentStatus
     format: TournamentFormat
+    owner_id: int | None
 
 
 class BracketRead(BaseModel):
