@@ -1,14 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
+import TournamentsPage from "./pages/TournamentsPage";
+import TournamentPage from "./pages/TournamentPage";
 
-function App() {
-  return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold">Tournament Organizer Frontend</h1>
-      <p className="mt-4">This frontend is alive!</p>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <div className="min-h-screen">
+        <header className="border-b border-gray-800 px-8 py-4">
+          <a href="/" className="text-xl font-bold">
+            🏆 Tournament Organizer
+          </a>
+        </header>
+        <main className="mx-auto max-w-5xl px-8 py-8">
+          <Routes>
+            <Route path="/" element={<TournamentsPage />} />
+            <Route path="/tournaments/:id" element={<TournamentPage />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  </React.StrictMode>
+);
