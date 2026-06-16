@@ -44,6 +44,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(detail);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
@@ -83,6 +84,25 @@ export const api = {
       body: JSON.stringify({ name, seed: seed ?? null }),
     }),
 
+  updateParticipant: (
+    tournamentId: number,
+    participantId: number,
+    fields: { name?: string; seed?: number | null }
+  ) =>
+    request<Participant>(
+      `/tournaments/${tournamentId}/participants/${participantId}`,
+      { method: "PATCH", body: JSON.stringify(fields) }
+    ),
+
+  deleteParticipant: (tournamentId: number, participantId: number) =>
+    request<void>(
+      `/tournaments/${tournamentId}/participants/${participantId}`,
+      { method: "DELETE" }
+    ),
+
+  deleteTournament: (tournamentId: number) =>
+    request<void>(`/tournaments/${tournamentId}`, { method: "DELETE" }),
+
   generateBracket: (tournamentId: number) =>
     request<Bracket>(`/tournaments/${tournamentId}/generate`, {
       method: "POST",
@@ -94,6 +114,12 @@ export const api = {
   reportResult: (matchId: number, winnerId: number) =>
     request<Match>(`/matches/${matchId}/result`, {
       method: "POST",
+      body: JSON.stringify({ winner_id: winnerId }),
+    }),
+
+  correctResult: (matchId: number, winnerId: number) =>
+    request<Match>(`/matches/${matchId}/result`, {
+      method: "PATCH",
       body: JSON.stringify({ winner_id: winnerId }),
     }),
 };
