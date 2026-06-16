@@ -14,13 +14,16 @@ Real-use gaps found after v1, now built:
 - [x] **Correct a reported result** — fix a mis-clicked winner; re-propagates
   downstream. Blocked when a later dependent match is already decided, or for
   the grand final / locked swiss rounds. Always safe for round robin.
+- [x] **Match scores** — optional per-match scores (e.g. 2-1), validated against
+  the winner and shown in the bracket. Corrections swap scores to follow the
+  new winner.
 
 ## Likely future features
 - **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
   (Vercel/Netlify) so there's a real URL. Highest resume payoff.
 - **Shareable spectator link** — read-only bracket view, no login (reads are
   already public; needs a clean view + "copy link").
-- **Match scores** — per-match scores (`score_a`/`score_b`), best-of-N series.
+- **Best-of-N series** — group several games into one match result.
 - **Teams** — `Participant.type` already reserves `TEAM`; add roster management.
 - **Seeding controls** — manual seeding / drag-to-reorder before generating.
 - **Double-elim byes** — support non-power-of-two counts in double elimination.
