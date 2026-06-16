@@ -85,14 +85,24 @@ interface SectionProps {
 }
 
 function SingleElimination({ matches, ...rest }: SectionProps) {
-  const rounds = groupByRound(matches);
+  const thirdPlace = matches.filter((m) => m.bracket === "THIRD_PLACE");
+  const main = matches.filter((m) => m.bracket !== "THIRD_PLACE");
+  const rounds = groupByRound(main);
   const lastRound = rounds[rounds.length - 1].round;
   return (
-    <RoundColumns
-      rounds={rounds}
-      label={(round) => roundLabel(round, lastRound)}
-      {...rest}
-    />
+    <div className="space-y-6">
+      <RoundColumns
+        rounds={rounds}
+        label={(round) => roundLabel(round, lastRound)}
+        {...rest}
+      />
+      {thirdPlace.length > 0 && (
+        <div>
+          <h3 className="mb-3 text-lg font-semibold">Third place</h3>
+          <MatchCard match={thirdPlace[0]} {...rest} />
+        </div>
+      )}
+    </div>
   );
 }
 

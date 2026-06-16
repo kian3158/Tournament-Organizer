@@ -73,11 +73,17 @@ export const api = {
   createTournament: (
     name: string,
     format: TournamentFormat = "SINGLE_ELIM",
-    bestOf = 1
+    bestOf = 1,
+    thirdPlace = false
   ) =>
     request<Tournament>("/tournaments", {
       method: "POST",
-      body: JSON.stringify({ name, format, best_of: bestOf }),
+      body: JSON.stringify({
+        name,
+        format,
+        best_of: bestOf,
+        third_place: thirdPlace,
+      }),
     }),
 
   listParticipants: (tournamentId: number) =>
