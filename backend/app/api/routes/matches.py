@@ -40,7 +40,9 @@ async def report_result(
 ):
     _require_match_owner(db, match_id, current_user)
     try:
-        match = BracketService().advance_match(db, match_id, payload.winner_id)
+        match = BracketService().advance_match(
+            db, match_id, payload.winner_id, payload.score_a, payload.score_b
+        )
     except BracketError as exc:
         if "not found" in str(exc).lower():
             raise HTTPException(status_code=404, detail=str(exc))
@@ -60,7 +62,9 @@ async def correct_result(
 ):
     _require_match_owner(db, match_id, current_user)
     try:
-        match = BracketService().correct_match(db, match_id, payload.winner_id)
+        match = BracketService().correct_match(
+            db, match_id, payload.winner_id, payload.score_a, payload.score_b
+        )
     except BracketError as exc:
         if "not found" in str(exc).lower():
             raise HTTPException(status_code=404, detail=str(exc))

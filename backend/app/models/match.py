@@ -17,6 +17,9 @@ class Match(Base):
     player_a_id = Column(Integer, ForeignKey("participants.id"))
     player_b_id = Column(Integer, ForeignKey("participants.id"))
     winner_id = Column(Integer, ForeignKey("participants.id"), nullable=True)
+    # Optional per-match scores (e.g. 2-1). Null until a scored result is reported.
+    score_a = Column(Integer, nullable=True)
+    score_b = Column(Integer, nullable=True)
     next_match_id = Column(Integer, ForeignKey("matches.id"), nullable=True)
     next_match_slot = Column(Enum(MatchSlot), nullable=True)
 

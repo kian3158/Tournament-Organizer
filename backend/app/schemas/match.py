@@ -12,6 +12,8 @@ class MatchRead(BaseModel):
     player_a_id: Optional[int]
     player_b_id: Optional[int]
     winner_id: Optional[int]
+    score_a: Optional[int]
+    score_b: Optional[int]
     next_match_id: Optional[int]
     next_match_slot: Optional[str]
     bracket: Optional[str]
@@ -21,3 +23,5 @@ class MatchRead(BaseModel):
 
 class ResultReport(BaseModel):
     winner_id: int
+    score_a: Optional[int] = None
+    score_b: Optional[int] = None
