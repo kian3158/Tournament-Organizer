@@ -122,3 +122,7 @@ docs/       product, architecture, domain model, roadmap, decisions, backlog
   handle any count.
 - Set a strong `SECRET_KEY` (32+ random bytes) in any real deployment; the
   default is a development placeholder.
+
+## License
+
+[MIT](LICENSE) © Kian Shahrami
