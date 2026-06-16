@@ -5,7 +5,8 @@ ideas, not commitments.
 
 ## Done in v1.1 — `feature/tournament-editing`
 
-Real-use gaps found after v1, now built:
+Shipped on this branch (editing gaps found after v1, plus the next batch of
+real features):
 
 - [x] **Edit/delete participants** — rename or remove participants while the
   tournament is still a draft (before the bracket is generated).
@@ -17,16 +18,18 @@ Real-use gaps found after v1, now built:
 - [x] **Match scores** — optional per-match scores (e.g. 2-1), validated against
   the winner and shown in the bracket. Corrections swap scores to follow the
   new winner.
+- [x] **Shareable spectator link** — read-only, login-free `/watch/:id` view
+  with live updates, plus a "Share" button that copies the link.
+- [x] **Double-elim byes** — double elimination now pads non-power-of-two counts
+  with byes; the losers bracket passes lone droppers through (no empty matches).
+- [x] **Teams with rosters** — a participant can be a team with managed member
+  names (add/rename/remove in draft), shown with a Team badge.
 
 ## Likely future features
 - **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
   (Vercel/Netlify) so there's a real URL. Highest resume payoff.
-- **Shareable spectator link** — read-only bracket view, no login (reads are
-  already public; needs a clean view + "copy link").
 - **Best-of-N series** — group several games into one match result.
-- **Teams** — `Participant.type` already reserves `TEAM`; add roster management.
 - **Seeding controls** — manual seeding / drag-to-reorder before generating.
-- **Double-elim byes** — support non-power-of-two counts in double elimination.
 - **Third-place match** in single-elimination.
 - **Tournament templates / presets** for quick recurring game nights.
 
