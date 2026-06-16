@@ -55,6 +55,17 @@ def get_tournament(tournament_id: int, db: Session = Depends(get_db)):
     return _get_tournament_or_404(db, tournament_id)
 
 
+@router.delete("/{tournament_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_tournament(
+    tournament_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    tournament = _get_tournament_or_404(db, tournament_id)
+    _require_owner(tournament, current_user)
+    crud.tournament.delete(db, tournament)
+
+
 @router.post("/{tournament_id}/generate", response_model=BracketRead)
 async def generate_bracket(
     tournament_id: int,

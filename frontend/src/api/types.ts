@@ -25,12 +25,18 @@ export interface Tournament {
   owner_id: number | null;
 }
 
+export interface RosterMember {
+  id: number;
+  name: string;
+}
+
 export interface Participant {
   id: number;
   tournament_id: number | null;
   name: string;
   seed: number | null;
   type: string;
+  members: RosterMember[];
 }
 
 export interface Match {
@@ -40,6 +46,8 @@ export interface Match {
   player_a_id: number | null;
   player_b_id: number | null;
   winner_id: number | null;
+  score_a: number | null;
+  score_b: number | null;
   next_match_id: number | null;
   next_match_slot: "A" | "B" | null;
   bracket:

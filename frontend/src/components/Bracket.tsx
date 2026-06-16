@@ -2,15 +2,28 @@ import { useMemo } from "react";
 import type { Match, Standing, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
+type WinnerHandler = (
+  matchId: number,
+  winnerId: number,
+  scoreA?: number | null,
+  scoreB?: number | null
+) => void;
+
 interface Props {
   data: BracketData;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 type NameOf = (id: number | null) => string;
 
-export default function Bracket({ data, canReport, onPickWinner }: Props) {
+export default function Bracket({
+  data,
+  canReport,
+  onPickWinner,
+  onCorrectWinner,
+}: Props) {
   const { tournament, participants, matches } = data;
 
   const nameOf = useMemo<NameOf>(() => {
@@ -32,7 +45,13 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
         : findChampion(matches)
       : null;
 
-  const sectionProps = { matches, nameOf, canReport, onPickWinner };
+  const sectionProps = {
+    matches,
+    nameOf,
+    canReport,
+    onPickWinner,
+    onCorrectWinner,
+  };
 
   return (
     <section>
@@ -42,7 +61,7 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
 
       {champion != null && (
         <div className="mb-6 rounded-md border border-green-700 bg-green-900/40 px-4 py-3 text-green-200">
-          🏆 Champion: <span className="font-bold">{nameOf(champion)}</span>
+          Champion: <span className="font-bold">{nameOf(champion)}</span>
         </div>
       )}
 
@@ -61,7 +80,8 @@ interface SectionProps {
   matches: Match[];
   nameOf: NameOf;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 function SingleElimination({ matches, ...rest }: SectionProps) {
@@ -179,7 +199,8 @@ interface RoundColumnsProps {
   label?: (round: number, allRounds: number[]) => string;
   nameOf: NameOf;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 function RoundColumns({
@@ -188,6 +209,7 @@ function RoundColumns({
   nameOf,
   canReport,
   onPickWinner,
+  onCorrectWinner,
 }: RoundColumnsProps) {
   const roundNumbers = rounds.map((r) => r.round);
   return (
@@ -204,6 +226,7 @@ function RoundColumns({
               nameOf={nameOf}
               canReport={canReport}
               onPickWinner={onPickWinner}
+              onCorrectWinner={onCorrectWinner}
             />
           ))}
         </div>

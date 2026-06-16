@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.match import Match, MatchSlot
@@ -106,7 +108,14 @@ class BracketService:
                 winner_id = a if a is not None else b
                 self._record_winner(db, index_to_match[plan.index], winner_id)
 
-    def advance_match(self, db: Session, match_id: int, winner_id: int) -> Match:
+    def advance_match(
+        self,
+        db: Session,
+        match_id: int,
+        winner_id: int,
+        score_a: Optional[int] = None,
+        score_b: Optional[int] = None,
+    ) -> Match:
         """Report the winner of a match and propagate the result."""
         match = db.get(Match, match_id)
         if match is None:
@@ -119,6 +128,7 @@ class BracketService:
         if match.winner_id is not None:
             raise BracketError("Match result has already been reported.")
 
+        self._set_scores(match, winner_id, score_a, score_b)
         self._record_winner(db, match, winner_id)
         # Flush so completion checks (which query the DB) see this result;
         # the session uses autoflush=False.
@@ -127,6 +137,135 @@ class BracketService:
 
         db.flush()
         return match
+
+    def correct_match(
+        self,
+        db: Session,
+        match_id: int,
+        new_winner_id: int,
+        score_a: Optional[int] = None,
+        score_b: Optional[int] = None,
+    ) -> Match:
+        """Change an already-reported result, when it's safe to do so."""
+        match = db.get(Match, match_id)
+        if match is None:
+            raise BracketError(f"Match {match_id} not found.")
+        if new_winner_id == match.winner_id:
+            return match  # no change
+
+        self._assert_correctable(db, match, new_winner_id)
+
+        self._clear_propagation(db, match)
+        match.winner_id = None
+        db.flush()
+        self._record_winner(db, match, new_winner_id)
+
+        if score_a is not None or score_b is not None:
+            self._set_scores(match, new_winner_id, score_a, score_b)
+        elif match.score_a is not None and match.score_b is not None:
+            # Flipping the winner flips which side has the higher score.
+            match.score_a, match.score_b = match.score_b, match.score_a
+
+        db.flush()
+        return match
+
+    def _assert_correctable(
+        self, db: Session, match: Match, new_winner_id: int
+    ) -> None:
+        """Raise BracketError unless this result can be safely changed."""
+        if match.winner_id is None:
+            raise BracketError("Match has no result to correct yet.")
+        if new_winner_id not in (match.player_a_id, match.player_b_id):
+            raise BracketError("Winner must be one of the match participants.")
+        if match.bracket in (Bracket.GRAND_FINAL, Bracket.GRAND_FINAL_RESET):
+            raise BracketError("Grand final results can't be corrected.")
+
+        # Refuse if a downstream match that depends on this one is already decided.
+        for next_id in (match.next_match_id, match.loser_next_match_id):
+            if next_id is None:
+                continue
+            downstream = db.get(Match, next_id)
+            if downstream is not None and downstream.winner_id is not None:
+                raise BracketError(
+                    "A later match that depends on this result is already "
+                    "decided. Correct that one first."
+                )
+
+        # Swiss generates rounds from results, so don't change a locked-in round.
+        if match.bracket == Bracket.SWISS:
+            later_rounds = (
+                db.query(Match)
+                .filter(
+                    Match.tournament_id == match.tournament_id,
+                    Match.bracket == Bracket.SWISS,
+                    Match.round_number > match.round_number,
+                )
+                .count()
+            )
+            if later_rounds:
+                raise BracketError(
+                    "Later swiss rounds already exist; correct results in the "
+                    "current round only."
+                )
+
+    def _clear_propagation(self, db: Session, match: Match) -> None:
+        """Remove this match's previously-propagated players from downstream."""
+        old_winner = match.winner_id
+        old_loser = (
+            match.player_a_id if old_winner == match.player_b_id else match.player_b_id
+        )
+
+        if match.next_match_id is not None:
+            nxt = db.get(Match, match.next_match_id)
+            if nxt is not None:
+                if (
+                    match.next_match_slot == MatchSlot.A
+                    and nxt.player_a_id == old_winner
+                ):
+                    nxt.player_a_id = None
+                elif (
+                    match.next_match_slot == MatchSlot.B
+                    and nxt.player_b_id == old_winner
+                ):
+                    nxt.player_b_id = None
+
+        if match.loser_next_match_id is not None and old_loser is not None:
+            lnxt = db.get(Match, match.loser_next_match_id)
+            if lnxt is not None:
+                if (
+                    match.loser_next_match_slot == MatchSlot.A
+                    and lnxt.player_a_id == old_loser
+                ):
+                    lnxt.player_a_id = None
+                elif (
+                    match.loser_next_match_slot == MatchSlot.B
+                    and lnxt.player_b_id == old_loser
+                ):
+                    lnxt.player_b_id = None
+
+    def _set_scores(
+        self,
+        match: Match,
+        winner_id: int,
+        score_a: Optional[int],
+        score_b: Optional[int],
+    ) -> None:
+        """Validate and store optional per-match scores."""
+        if score_a is None and score_b is None:
+            return
+        if score_a is None or score_b is None:
+            raise BracketError("Enter a score for both players, or neither.")
+        if score_a < 0 or score_b < 0:
+            raise BracketError("Scores can't be negative.")
+        if score_a == score_b:
+            raise BracketError(
+                "A match can't end in a tie; the winner needs the higher score."
+            )
+        higher = match.player_a_id if score_a > score_b else match.player_b_id
+        if higher != winner_id:
+            raise BracketError("The winner must have the higher score.")
+        match.score_a = score_a
+        match.score_b = score_b
 
     def _record_winner(self, db: Session, match: Match, winner_id: int) -> None:
         """Set the winner and route winner (and loser, if any) downstream."""

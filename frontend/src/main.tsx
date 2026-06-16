@@ -12,13 +12,14 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import TournamentPage from "./pages/TournamentPage";
+import SpectatorPage from "./pages/SpectatorPage";
 
 function Header() {
   const { user, logout } = useAuth();
   return (
     <header className="flex items-center justify-between border-b border-gray-800 px-8 py-4">
       <Link to="/" className="text-xl font-bold">
-        🏆 Tournament Organizer
+        Tournament Organizer
       </Link>
       {user ? (
         <div className="flex items-center gap-4 text-sm">
@@ -61,6 +62,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/tournaments/:id" element={<TournamentPage />} />
+              <Route path="/watch/:id" element={<SpectatorPage />} />
             </Routes>
           </main>
         </div>

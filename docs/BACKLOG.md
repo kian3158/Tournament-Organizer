@@ -1,21 +1,49 @@
 # Ideas & Backlog
 
-Things that are cool but not now. Nothing here is committed to the roadmap until
-it's pulled into [ROADMAP.md](ROADMAP.md).
+Things beyond v1. The top section is actively being worked on; the rest are
+ideas, not commitments.
+
+## Done in v1.1 — `feature/tournament-editing`
+
+Shipped on this branch (editing gaps found after v1, plus the next batch of
+real features):
+
+- [x] **Edit/delete participants** — rename or remove participants while the
+  tournament is still a draft (before the bracket is generated).
+- [x] **Delete a tournament** — owner can delete their own tournament (and its
+  matches/participants).
+- [x] **Correct a reported result** — fix a mis-clicked winner; re-propagates
+  downstream. Blocked when a later dependent match is already decided, or for
+  the grand final / locked swiss rounds. Always safe for round robin.
+- [x] **Match scores** — optional per-match scores (e.g. 2-1), validated against
+  the winner and shown in the bracket. Corrections swap scores to follow the
+  new winner.
+- [x] **Shareable spectator link** — read-only, login-free `/watch/:id` view
+  with live updates, plus a "Share" button that copies the link.
+- [x] **Double-elim byes** — double elimination now pads non-power-of-two counts
+  with byes; the losers bracket passes lone droppers through (no empty matches).
+- [x] **Teams with rosters** — a participant can be a team with managed member
+  names (add/rename/remove in draft), shown with a Team badge.
 
 ## Likely future features
-- **Teams** — `Participant.type` already reserves `TEAM`; add roster management.
-- **Score tracking** — per-match scores (`score_a`/`score_b`), best-of-N series.
+- **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
+  (Vercel/Netlify) so there's a real URL. Highest resume payoff.
+- **Best-of-N series** — group several games into one match result.
 - **Seeding controls** — manual seeding / drag-to-reorder before generating.
 - **Third-place match** in single-elimination.
 - **Tournament templates / presets** for quick recurring game nights.
-- **Shareable spectator link** (read-only bracket view, no login).
+
+## Testing & robustness
+- **Frontend tests** — none yet; add Vitest + React Testing Library.
+- **End-to-end tests** — a Playwright happy-path test through the UI.
+- **WebSocket reconnect** — the live feed currently drops if the server blips.
 
 ## Nice-to-haves
 - Export bracket as image/PDF.
 - Match scheduling / time slots for in-person events.
 - Basic stats per participant across tournaments.
-- Dark mode.
+- README screenshots / demo GIF.
+- Dark mode toggle (currently dark-only).
 
 ## Bigger / maybe-never
 - Public hosting / multi-tenant SaaS.

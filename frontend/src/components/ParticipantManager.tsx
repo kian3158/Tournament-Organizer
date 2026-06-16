@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import type { Participant } from "../api/types";
+import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from "./icons";
+import RosterEditor from "./RosterEditor";
 
 interface Props {
   tournamentId: number;
@@ -17,7 +19,14 @@ export default function ParticipantManager({
 }: Props) {
   const [name, setName] = useState("");
   const [seed, setSeed] = useState("");
+  const [isTeam, setIsTeam] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+
+  function fail(e: unknown) {
+    setError(String((e as Error).message));
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -27,13 +36,36 @@ export default function ParticipantManager({
       await api.addParticipant(
         tournamentId,
         name.trim(),
-        seed.trim() ? Number(seed) : null
+        seed.trim() ? Number(seed) : null,
+        isTeam ? "TEAM" : "PLAYER"
       );
       setName("");
       setSeed("");
       onChange();
     } catch (e) {
-      setError(String((e as Error).message));
+      fail(e);
+    }
+  }
+
+  async function handleDelete(id: number) {
+    setError(null);
+    try {
+      await api.deleteParticipant(tournamentId, id);
+      onChange();
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  async function handleSaveEdit(id: number) {
+    if (!editName.trim()) return;
+    setError(null);
+    try {
+      await api.updateParticipant(tournamentId, id, { name: editName.trim() });
+      setEditingId(null);
+      onChange();
+    } catch (e) {
+      fail(e);
     }
   }
 
@@ -49,11 +81,11 @@ export default function ParticipantManager({
       </h2>
 
       {editable && (
-        <form onSubmit={handleAdd} className="mb-4 flex gap-3">
+        <form onSubmit={handleAdd} className="mb-4 flex flex-wrap gap-3">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Participant name"
+            placeholder={isTeam ? "Team name" : "Participant name"}
             className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-4 py-2 outline-none focus:border-blue-500"
           />
           <input
@@ -64,6 +96,14 @@ export default function ParticipantManager({
             min="1"
             className="w-36 rounded-md border border-gray-700 bg-gray-800 px-4 py-2 outline-none focus:border-blue-500"
           />
+          <label className="flex items-center gap-2 text-sm text-gray-300">
+            <input
+              type="checkbox"
+              checked={isTeam}
+              onChange={(e) => setIsTeam(e.target.checked)}
+            />
+            Team
+          </label>
           <button
             type="submit"
             className="rounded-md bg-blue-600 px-5 py-2 font-medium hover:bg-blue-500"
@@ -77,18 +117,85 @@ export default function ParticipantManager({
       {participants.length === 0 ? (
         <p className="text-gray-400">No participants yet.</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <ul className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((p) => (
             <li
               key={p.id}
-              className="flex items-center gap-2 rounded-md border border-gray-800 bg-gray-900 px-3 py-2"
+              className="rounded-md border border-gray-800 bg-gray-900 px-3 py-2"
             >
-              {p.seed != null && (
-                <span className="text-xs font-semibold text-gray-500">
-                  #{p.seed}
-                </span>
+              <div className="flex items-center gap-2">
+                {editingId === p.id ? (
+                  <>
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handleSaveEdit(p.id)
+                      }
+                      autoFocus
+                      className="min-w-0 flex-1 rounded border border-gray-700 bg-gray-800 px-2 py-1"
+                    />
+                    <button
+                      onClick={() => handleSaveEdit(p.id)}
+                      className="text-green-400 hover:text-green-300"
+                      title="Save"
+                    >
+                      <CheckIcon />
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="text-gray-500 hover:text-gray-300"
+                      title="Cancel"
+                    >
+                      <CloseIcon />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {p.seed != null && (
+                      <span className="text-xs font-semibold text-gray-500">
+                        #{p.seed}
+                      </span>
+                    )}
+                    <span className="flex-1 truncate">{p.name}</span>
+                    {p.type === "TEAM" && (
+                      <span className="rounded bg-blue-900/60 px-1.5 py-0.5 text-xs font-medium text-blue-200">
+                        Team
+                      </span>
+                    )}
+                    {editable && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingId(p.id);
+                            setEditName(p.name);
+                          }}
+                          className="text-gray-500 hover:text-blue-400"
+                          title="Rename"
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          className="text-gray-500 hover:text-red-400"
+                          title="Remove"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {p.type === "TEAM" && (
+                <RosterEditor
+                  tournamentId={tournamentId}
+                  participant={p}
+                  editable={editable}
+                  onChange={onChange}
+                />
               )}
-              <span>{p.name}</span>
             </li>
           ))}
         </ul>

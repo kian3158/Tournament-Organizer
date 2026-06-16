@@ -6,7 +6,6 @@ from app.models.match import Match
 from app.models.participant import Participant
 from app.models.tournament import Tournament, TournamentFormat, TournamentStatus
 from app.services.bracket import BracketService
-from app.services.exceptions import BracketError
 from app.services.formats.double_elimination import DoubleEliminationFormat
 
 
@@ -24,9 +23,20 @@ def test_match_counts(n, expected):
 
 
 @pytest.mark.parametrize("n", [3, 5, 6, 7, 9])
-def test_rejects_non_power_of_two(n):
-    with pytest.raises(ValueError):
-        build(n)
+def test_non_power_of_two_builds_without_empty_losers_matches(n):
+    plans = build(n)
+    # Every losers-bracket match must have a real source for both slots, i.e.
+    # something points a winner/loser into each slot (no orphaned empty match).
+    lb_indexes = {p.index for p in plans if p.bracket == "LOSERS"}
+    filled_a: set[int] = set()
+    filled_b: set[int] = set()
+    for p in plans:
+        if p.next_index in lb_indexes:
+            (filled_a if p.next_slot == "A" else filled_b).add(p.next_index)
+        if p.loser_next_index in lb_indexes:
+            (filled_a if p.loser_next_slot == "A" else filled_b).add(p.loser_next_index)
+    for idx in lb_indexes:
+        assert idx in filled_a and idx in filled_b
 
 
 def test_all_brackets_present():
@@ -78,10 +88,24 @@ def playable(db, tid):
     ]
 
 
-def test_rejects_non_power_of_two_via_service(db):
-    t = make_tournament(db, 3)
-    with pytest.raises(BracketError):
-        BracketService().generate_bracket(db, t, db.query(Participant).all())
+@pytest.mark.parametrize("n", [3, 5, 6, 7])
+def test_non_power_of_two_completes(db, n):
+    """Byes pad the bracket; playing every match still yields one champion."""
+    t = make_tournament(db, n)
+    svc = BracketService()
+    svc.generate_bracket(db, t, db.query(Participant).all())
+    db.commit()
+
+    guard = 0
+    while playable(db, t.id):
+        m = playable(db, t.id)[0]
+        svc.advance_match(db, m.id, m.player_a_id)
+        db.commit()
+        guard += 1
+        assert guard < 200
+
+    db.refresh(t)
+    assert t.status == TournamentStatus.COMPLETED
 
 
 def test_losers_drop_into_losers_bracket(db):
