@@ -26,19 +26,19 @@ export default function SpectatorPage() {
   // Live updates while spectating.
   useBracketSocket(tournamentId, setBracket);
 
-  if (error && !bracket) return <p className="text-red-400">{error}</p>;
-  if (!bracket) return <p className="text-gray-400">Loading…</p>;
+  if (error && !bracket) return <p className="text-danger">{error}</p>;
+  if (!bracket) return <p className="text-muted">Loading…</p>;
 
   const { tournament } = bracket;
 
   return (
     <div className="space-y-8">
       <div>
-        <Link to="/" className="text-sm text-blue-400 hover:underline">
+        <Link to="/" className="text-sm text-accent hover:underline">
           ← All tournaments
         </Link>
-        <h1 className="mt-2 text-2xl font-bold">{tournament.name}</h1>
-        <p className="text-gray-400">{tournament.status} · spectator view</p>
+        <h1 className="mt-2 text-2xl font-semibold">{tournament.name}</h1>
+        <p className="text-sm text-muted">{tournament.status} · spectator view</p>
       </div>
 
       <BracketView

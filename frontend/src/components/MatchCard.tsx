@@ -57,16 +57,16 @@ export default function MatchCard({
   }
 
   return (
-    <div className="w-52 overflow-hidden rounded-md border border-gray-700 bg-gray-900 text-sm">
+    <div className="w-52 overflow-hidden rounded-lg border bg-surface text-sm shadow-sm">
       <Slot nameOf={nameOf} {...slotFor(match.player_a_id, match.score_a)} />
-      <div className="border-t border-gray-700" />
+      <div className="border-t" />
       <Slot nameOf={nameOf} {...slotFor(match.player_b_id, match.score_b)} />
       {showScoreInputs && (
-        <div className="flex items-center gap-2 border-t border-gray-700 bg-gray-950/40 px-3 py-2">
+        <div className="flex items-center gap-2 border-t bg-elevated px-3 py-2">
           <ScoreInput value={scoreA} onChange={setScoreA} />
-          <span className="text-gray-500">:</span>
+          <span className="text-muted">:</span>
           <ScoreInput value={scoreB} onChange={setScoreB} />
-          <span className="ml-auto text-xs text-gray-500">score (optional)</span>
+          <span className="ml-auto text-xs text-muted">score (optional)</span>
         </div>
       )}
     </div>
@@ -86,7 +86,7 @@ function ScoreInput({
       min="0"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-10 rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-center"
+      className="w-10 rounded border bg-surface px-1 py-0.5 text-center outline-none focus:border-accent"
     />
   );
 }
@@ -127,11 +127,11 @@ function Slot({
   const text = playerId != null ? nameOf(playerId) : label;
   const base = "flex items-center justify-between gap-2 px-3 py-2";
   const state = isWinner
-    ? "bg-green-900/60 font-semibold text-green-200"
+    ? "bg-win/15 font-semibold text-win"
     : playerId == null
-      ? "text-gray-500 italic"
+      ? "italic text-muted"
       : "";
-  const hover = clickable ? "cursor-pointer hover:bg-blue-900/50" : "";
+  const hover = clickable ? "cursor-pointer hover:bg-accent/10" : "";
 
   return (
     <button
@@ -144,7 +144,7 @@ function Slot({
       <span className="truncate">{text}</span>
       <span className="flex shrink-0 items-center gap-1.5">
         {score != null && <span className="tabular-nums">{score}</span>}
-        {isWinner && <CheckIcon className="text-green-300" size={16} />}
+        {isWinner && <CheckIcon className="text-win" size={16} />}
       </span>
     </button>
   );

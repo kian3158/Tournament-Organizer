@@ -87,8 +87,8 @@ export default function TournamentPage() {
     }
   }
 
-  if (error && !bracket) return <p className="text-red-400">{error}</p>;
-  if (!bracket) return <p className="text-gray-400">Loading…</p>;
+  if (error && !bracket) return <p className="text-danger">{error}</p>;
+  if (!bracket) return <p className="text-muted">Loading…</p>;
 
   const { tournament, participants } = bracket;
   const isOwner = user != null && tournament.owner_id === user.id;
@@ -97,18 +97,18 @@ export default function TournamentPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <Link to="/" className="text-sm text-blue-400 hover:underline">
+          <Link to="/" className="text-sm text-accent hover:underline">
             ← All tournaments
           </Link>
-          <h1 className="mt-2 text-2xl font-bold">{tournament.name}</h1>
-          <p className="text-gray-400">{tournament.status}</p>
+          <h1 className="mt-2 text-2xl font-semibold">{tournament.name}</h1>
+          <p className="text-sm text-muted">{tournament.status}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={handleCopyLink}
-            className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
+            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-elevated"
           >
             {copied ? "Copied!" : "Share"}
           </button>
@@ -117,7 +117,7 @@ export default function TournamentPage() {
               onClick={handleGenerate}
               disabled={!canGenerate}
               title={canGenerate ? "" : "Add at least 2 participants first"}
-              className="rounded-md bg-green-600 px-5 py-2 font-medium hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-accent px-5 py-2 font-medium text-accent-fg transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               Generate bracket
             </button>
@@ -125,7 +125,7 @@ export default function TournamentPage() {
           {isOwner && (
             <button
               onClick={handleDeleteTournament}
-              className="rounded-md border border-red-800 px-4 py-2 text-sm text-red-400 hover:bg-red-900/40"
+              className="rounded-lg border border-danger/40 px-4 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger/10"
             >
               Delete
             </button>
@@ -133,7 +133,7 @@ export default function TournamentPage() {
         </div>
       </div>
 
-      {error && <p className="text-red-400">{error}</p>}
+      {error && <p className="text-danger">{error}</p>}
 
       <ParticipantManager
         tournamentId={tournamentId}

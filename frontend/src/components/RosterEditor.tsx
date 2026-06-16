@@ -61,9 +61,9 @@ export default function RosterEditor({
   const members = participant.members;
 
   return (
-    <div className="mt-2 border-t border-gray-800 pt-2">
+    <div className="mt-2 border-t pt-2">
       {members.length === 0 && (
-        <p className="text-xs text-gray-500">No members yet.</p>
+        <p className="text-xs text-muted">No members yet.</p>
       )}
       <ul className="space-y-1">
         {members.map((m) => (
@@ -75,18 +75,18 @@ export default function RosterEditor({
                   onChange={(e) => setEditName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSave(m.id)}
                   autoFocus
-                  className="min-w-0 flex-1 rounded border border-gray-700 bg-gray-800 px-2 py-0.5"
+                  className="min-w-0 flex-1 rounded border bg-bg px-2 py-0.5 outline-none focus:border-accent"
                 />
                 <button
                   onClick={() => handleSave(m.id)}
-                  className="text-green-400 hover:text-green-300"
+                  className="text-win hover:opacity-80"
                   title="Save"
                 >
                   <CheckIcon size={13} />
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
-                  className="text-gray-500 hover:text-gray-300"
+                  className="text-muted hover:text-fg"
                   title="Cancel"
                 >
                   <CloseIcon size={13} />
@@ -94,7 +94,7 @@ export default function RosterEditor({
               </>
             ) : (
               <>
-                <span className="flex-1 truncate text-gray-300">{m.name}</span>
+                <span className="flex-1 truncate">{m.name}</span>
                 {editable && (
                   <>
                     <button
@@ -102,14 +102,14 @@ export default function RosterEditor({
                         setEditingId(m.id);
                         setEditName(m.name);
                       }}
-                      className="text-gray-500 hover:text-blue-400"
+                      className="text-muted hover:text-accent"
                       title="Rename"
                     >
                       <PencilIcon size={13} />
                     </button>
                     <button
                       onClick={() => handleDelete(m.id)}
-                      className="text-gray-500 hover:text-red-400"
+                      className="text-muted hover:text-danger"
                       title="Remove"
                     >
                       <TrashIcon size={13} />
@@ -127,17 +127,17 @@ export default function RosterEditor({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Add member"
-            className="min-w-0 flex-1 rounded border border-gray-700 bg-gray-800 px-2 py-0.5 text-sm"
+            className="min-w-0 flex-1 rounded border bg-bg px-2 py-0.5 text-sm outline-none focus:border-accent"
           />
           <button
             type="submit"
-            className="rounded bg-blue-600 px-2.5 py-0.5 text-sm hover:bg-blue-500"
+            className="rounded bg-accent px-2.5 py-0.5 text-sm text-accent-fg hover:bg-accent-hover"
           >
             Add
           </button>
         </form>
       )}
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
     </div>
   );
 }

@@ -60,7 +60,7 @@ export default function Bracket({
       </h2>
 
       {champion != null && (
-        <div className="mb-6 rounded-md border border-green-700 bg-green-900/40 px-4 py-3 text-green-200">
+        <div className="mb-6 rounded-lg border border-win/40 bg-win/10 px-4 py-3 text-win">
           Champion: <span className="font-bold">{nameOf(champion)}</span>
         </div>
       )}
@@ -133,7 +133,7 @@ function RoundRobin({ standings, matches, ...rest }: RoundRobinProps) {
     <div className="space-y-8">
       <StandingsTable standings={standings} />
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-300">Schedule</h3>
+        <h3 className="mb-3 text-lg font-semibold">Schedule</h3>
         <RoundColumns rounds={rounds} {...rest} />
       </div>
     </div>
@@ -144,10 +144,10 @@ function StandingsTable({ standings }: { standings: Standing[] }) {
   if (standings.length === 0) return null;
   return (
     <div>
-      <h3 className="mb-3 text-lg font-semibold text-gray-300">Standings</h3>
+      <h3 className="mb-3 text-lg font-semibold">Standings</h3>
       <table className="w-full max-w-lg border-collapse text-sm">
         <thead>
-          <tr className="border-b border-gray-700 text-left text-gray-400">
+          <tr className="border-b text-left text-muted">
             <th className="py-2 pr-4">#</th>
             <th className="py-2 pr-4">Participant</th>
             <th className="py-2 pr-4 text-center">P</th>
@@ -158,12 +158,12 @@ function StandingsTable({ standings }: { standings: Standing[] }) {
         </thead>
         <tbody>
           {standings.map((s, i) => (
-            <tr key={s.participant_id} className="border-b border-gray-800">
-              <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
+            <tr key={s.participant_id} className="border-b">
+              <td className="py-2 pr-4 text-muted">{i + 1}</td>
               <td className="py-2 pr-4 font-medium">{s.name}</td>
               <td className="py-2 pr-4 text-center">{s.played}</td>
-              <td className="py-2 pr-4 text-center text-green-300">{s.wins}</td>
-              <td className="py-2 pr-4 text-center text-red-300">{s.losses}</td>
+              <td className="py-2 pr-4 text-center text-win">{s.wins}</td>
+              <td className="py-2 pr-4 text-center text-danger">{s.losses}</td>
               <td className="py-2 text-center font-semibold">{s.points}</td>
             </tr>
           ))}
@@ -188,7 +188,7 @@ function BracketSection({
   const rounds = groupByRound(matches);
   return (
     <div>
-      <h3 className="mb-3 text-lg font-semibold text-gray-300">{title}</h3>
+      <h3 className="mb-3 text-lg font-semibold">{title}</h3>
       <RoundColumns rounds={rounds} label={label} {...rest} />
     </div>
   );
@@ -216,7 +216,7 @@ function RoundColumns({
     <div className="flex gap-10 overflow-x-auto pb-4">
       {rounds.map(({ round, matches }) => (
         <div key={round} className="flex flex-col justify-around gap-4">
-          <h4 className="text-center text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h4 className="text-center text-sm font-semibold uppercase tracking-wide text-muted">
             {label ? label(round, roundNumbers) : `Round ${round}`}
           </h4>
           {matches.map((m) => (
