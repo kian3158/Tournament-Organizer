@@ -143,6 +143,12 @@ export const api = {
       { method: "DELETE" }
     ),
 
+  reorderParticipants: (tournamentId: number, participantIds: number[]) =>
+    request<Participant[]>(`/tournaments/${tournamentId}/participants/order`, {
+      method: "PUT",
+      body: JSON.stringify({ participant_ids: participantIds }),
+    }),
+
   deleteTournament: (tournamentId: number) =>
     request<void>(`/tournaments/${tournamentId}`, { method: "DELETE" }),
 
