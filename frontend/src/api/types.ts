@@ -40,6 +40,8 @@ export interface Match {
   player_a_id: number | null;
   player_b_id: number | null;
   winner_id: number | null;
+  score_a: number | null;
+  score_b: number | null;
   next_match_id: number | null;
   next_match_slot: "A" | "B" | null;
   bracket:

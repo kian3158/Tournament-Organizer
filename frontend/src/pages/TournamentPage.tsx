@@ -39,10 +39,15 @@ export default function TournamentPage() {
     }
   }
 
-  async function handlePickWinner(matchId: number, winnerId: number) {
+  async function handlePickWinner(
+    matchId: number,
+    winnerId: number,
+    scoreA?: number | null,
+    scoreB?: number | null
+  ) {
     setError(null);
     try {
-      await api.reportResult(matchId, winnerId);
+      await api.reportResult(matchId, winnerId, scoreA, scoreB);
       await refresh();
     } catch (e) {
       setError(String((e as Error).message));

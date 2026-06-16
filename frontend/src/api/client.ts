@@ -111,10 +111,19 @@ export const api = {
   getBracket: (tournamentId: number) =>
     request<Bracket>(`/tournaments/${tournamentId}/bracket`),
 
-  reportResult: (matchId: number, winnerId: number) =>
+  reportResult: (
+    matchId: number,
+    winnerId: number,
+    scoreA?: number | null,
+    scoreB?: number | null
+  ) =>
     request<Match>(`/matches/${matchId}/result`, {
       method: "POST",
-      body: JSON.stringify({ winner_id: winnerId }),
+      body: JSON.stringify({
+        winner_id: winnerId,
+        score_a: scoreA ?? null,
+        score_b: scoreB ?? null,
+      }),
     }),
 
   correctResult: (matchId: number, winnerId: number) =>

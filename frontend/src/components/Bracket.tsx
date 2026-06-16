@@ -2,7 +2,12 @@ import { useMemo } from "react";
 import type { Match, Standing, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
-type WinnerHandler = (matchId: number, winnerId: number) => void;
+type WinnerHandler = (
+  matchId: number,
+  winnerId: number,
+  scoreA?: number | null,
+  scoreB?: number | null
+) => void;
 
 interface Props {
   data: BracketData;
