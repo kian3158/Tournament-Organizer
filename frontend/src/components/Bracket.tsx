@@ -2,15 +2,23 @@ import { useMemo } from "react";
 import type { Match, Standing, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
+type WinnerHandler = (matchId: number, winnerId: number) => void;
+
 interface Props {
   data: BracketData;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 type NameOf = (id: number | null) => string;
 
-export default function Bracket({ data, canReport, onPickWinner }: Props) {
+export default function Bracket({
+  data,
+  canReport,
+  onPickWinner,
+  onCorrectWinner,
+}: Props) {
   const { tournament, participants, matches } = data;
 
   const nameOf = useMemo<NameOf>(() => {
@@ -32,7 +40,13 @@ export default function Bracket({ data, canReport, onPickWinner }: Props) {
         : findChampion(matches)
       : null;
 
-  const sectionProps = { matches, nameOf, canReport, onPickWinner };
+  const sectionProps = {
+    matches,
+    nameOf,
+    canReport,
+    onPickWinner,
+    onCorrectWinner,
+  };
 
   return (
     <section>
@@ -61,7 +75,8 @@ interface SectionProps {
   matches: Match[];
   nameOf: NameOf;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 function SingleElimination({ matches, ...rest }: SectionProps) {
@@ -179,7 +194,8 @@ interface RoundColumnsProps {
   label?: (round: number, allRounds: number[]) => string;
   nameOf: NameOf;
   canReport: boolean;
-  onPickWinner: (matchId: number, winnerId: number) => void;
+  onPickWinner: WinnerHandler;
+  onCorrectWinner: WinnerHandler;
 }
 
 function RoundColumns({
@@ -188,6 +204,7 @@ function RoundColumns({
   nameOf,
   canReport,
   onPickWinner,
+  onCorrectWinner,
 }: RoundColumnsProps) {
   const roundNumbers = rounds.map((r) => r.round);
   return (
@@ -204,6 +221,7 @@ function RoundColumns({
               nameOf={nameOf}
               canReport={canReport}
               onPickWinner={onPickWinner}
+              onCorrectWinner={onCorrectWinner}
             />
           ))}
         </div>

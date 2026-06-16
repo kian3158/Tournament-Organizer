@@ -5,6 +5,7 @@ interface Props {
   nameOf: (id: number | null) => string;
   canReport: boolean;
   onPickWinner: (matchId: number, winnerId: number) => void;
+  onCorrectWinner: (matchId: number, winnerId: number) => void;
 }
 
 export default function MatchCard({
@@ -12,32 +13,38 @@ export default function MatchCard({
   nameOf,
   canReport,
   onPickWinner,
+  onCorrectWinner,
 }: Props) {
-  const ready =
-    match.player_a_id != null &&
-    match.player_b_id != null &&
-    match.winner_id == null;
-  const clickable = canReport && ready;
+  const bothPlayers =
+    match.player_a_id != null && match.player_b_id != null;
+  const ready = bothPlayers && match.winner_id == null;
+  const decided = bothPlayers && match.winner_id != null;
+
+  // Click an empty (no-winner) match to report; click the loser of a decided
+  // match to switch the result.
+  function slotFor(playerId: number | null) {
+    const isWinner = match.winner_id != null && match.winner_id === playerId;
+    const canPick = canReport && ready && playerId != null;
+    const canFix = canReport && decided && playerId != null && !isWinner;
+    return {
+      label: slotLabel(match, playerId),
+      playerId,
+      isWinner,
+      clickable: canPick || canFix,
+      title: canFix ? "Change the winner to this player" : undefined,
+      onClick: () => {
+        if (playerId == null) return;
+        if (canPick) onPickWinner(match.id, playerId);
+        else if (canFix) onCorrectWinner(match.id, playerId);
+      },
+    };
+  }
 
   return (
     <div className="w-52 overflow-hidden rounded-md border border-gray-700 bg-gray-900 text-sm">
-      <Slot
-        label={slotLabel(match, match.player_a_id)}
-        playerId={match.player_a_id}
-        isWinner={match.winner_id != null && match.winner_id === match.player_a_id}
-        nameOf={nameOf}
-        clickable={clickable && match.player_a_id != null}
-        onClick={() => match.player_a_id && onPickWinner(match.id, match.player_a_id)}
-      />
+      <Slot nameOf={nameOf} {...slotFor(match.player_a_id)} />
       <div className="border-t border-gray-700" />
-      <Slot
-        label={slotLabel(match, match.player_b_id)}
-        playerId={match.player_b_id}
-        isWinner={match.winner_id != null && match.winner_id === match.player_b_id}
-        nameOf={nameOf}
-        clickable={clickable && match.player_b_id != null}
-        onClick={() => match.player_b_id && onPickWinner(match.id, match.player_b_id)}
-      />
+      <Slot nameOf={nameOf} {...slotFor(match.player_b_id)} />
     </div>
   );
 }
@@ -61,9 +68,18 @@ interface SlotProps {
   clickable: boolean;
   nameOf: (id: number | null) => string;
   onClick: () => void;
+  title?: string;
 }
 
-function Slot({ playerId, label, isWinner, clickable, nameOf, onClick }: SlotProps) {
+function Slot({
+  playerId,
+  label,
+  isWinner,
+  clickable,
+  nameOf,
+  onClick,
+  title,
+}: SlotProps) {
   const text = playerId != null ? nameOf(playerId) : label;
   const base = "flex items-center justify-between px-3 py-2";
   const state = isWinner
@@ -78,6 +94,7 @@ function Slot({ playerId, label, isWinner, clickable, nameOf, onClick }: SlotPro
       type="button"
       disabled={!clickable}
       onClick={onClick}
+      title={title}
       className={`w-full text-left ${base} ${state} ${hover} disabled:cursor-default`}
     >
       <span className="truncate">{text}</span>
