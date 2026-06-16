@@ -14,6 +14,7 @@ from app.schemas import (
     RosterMemberCreate,
     RosterMemberRead,
     RosterMemberUpdate,
+    SeedOrder,
 )
 
 router = APIRouter(prefix="/tournaments/{tournament_id}", tags=["participants"])
@@ -70,6 +71,28 @@ def add_participant(
 def list_participants(tournament_id: int, db: Session = Depends(get_db)):
     if crud.tournament.get(db, tournament_id) is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    return crud.participant.list_for_tournament(db, tournament_id)
+
+
+@router.put("/participants/order", response_model=list[ParticipantRead])
+def reorder_participants(
+    tournament_id: int,
+    payload: SeedOrder,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    tournament = _owned_tournament(db, tournament_id, current_user)
+    _editable(tournament)
+    participants = crud.participant.list_for_tournament(db, tournament_id)
+    by_id = {p.id: p for p in participants}
+    if sorted(payload.participant_ids) != sorted(by_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Order must list each participant exactly once.",
+        )
+    for position, participant_id in enumerate(payload.participant_ids, start=1):
+        by_id[participant_id].seed = position
+    db.commit()
     return crud.participant.list_for_tournament(db, tournament_id)
 
 

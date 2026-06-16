@@ -6,6 +6,7 @@ from .participant import (
     RosterMemberCreate,
     RosterMemberRead,
     RosterMemberUpdate,
+    SeedOrder,
 )
 from .tournament import (
     BracketRead,
@@ -23,6 +24,7 @@ __all__ = [
     "ParticipantCreate",
     "ParticipantRead",
     "ParticipantUpdate",
+    "SeedOrder",
     "RosterMemberCreate",
     "RosterMemberRead",
     "RosterMemberUpdate",
