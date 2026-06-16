@@ -25,12 +25,18 @@ export interface Tournament {
   owner_id: number | null;
 }
 
+export interface RosterMember {
+  id: number;
+  name: string;
+}
+
 export interface Participant {
   id: number;
   tournament_id: number | null;
   name: string;
   seed: number | null;
   type: string;
+  members: RosterMember[];
 }
 
 export interface Match {

@@ -2,6 +2,7 @@ import type {
   Bracket,
   Match,
   Participant,
+  RosterMember,
   Token,
   Tournament,
   TournamentFormat,
@@ -78,11 +79,43 @@ export const api = {
   listParticipants: (tournamentId: number) =>
     request<Participant[]>(`/tournaments/${tournamentId}/participants`),
 
-  addParticipant: (tournamentId: number, name: string, seed?: number | null) =>
+  addParticipant: (
+    tournamentId: number,
+    name: string,
+    seed?: number | null,
+    type: string = "PLAYER"
+  ) =>
     request<Participant>(`/tournaments/${tournamentId}/participants`, {
       method: "POST",
-      body: JSON.stringify({ name, seed: seed ?? null }),
+      body: JSON.stringify({ name, seed: seed ?? null, type }),
     }),
+
+  addMember: (tournamentId: number, participantId: number, name: string) =>
+    request<RosterMember>(
+      `/tournaments/${tournamentId}/participants/${participantId}/members`,
+      { method: "POST", body: JSON.stringify({ name }) }
+    ),
+
+  updateMember: (
+    tournamentId: number,
+    participantId: number,
+    memberId: number,
+    name: string
+  ) =>
+    request<RosterMember>(
+      `/tournaments/${tournamentId}/participants/${participantId}/members/${memberId}`,
+      { method: "PATCH", body: JSON.stringify({ name }) }
+    ),
+
+  deleteMember: (
+    tournamentId: number,
+    participantId: number,
+    memberId: number
+  ) =>
+    request<void>(
+      `/tournaments/${tournamentId}/participants/${participantId}/members/${memberId}`,
+      { method: "DELETE" }
+    ),
 
   updateParticipant: (
     tournamentId: number,
