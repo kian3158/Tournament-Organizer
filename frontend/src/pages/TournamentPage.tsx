@@ -14,6 +14,7 @@ export default function TournamentPage() {
   const tournamentId = Number(id);
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const refresh = useCallback(() => {
     return api
@@ -64,6 +65,17 @@ export default function TournamentPage() {
     }
   }
 
+  async function handleCopyLink() {
+    const url = `${window.location.origin}/watch/${tournamentId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("Copy this spectator link:", url);
+    }
+  }
+
   async function handleDeleteTournament() {
     if (!window.confirm("Delete this tournament? This can't be undone.")) return;
     setError(null);
@@ -93,26 +105,32 @@ export default function TournamentPage() {
           <h1 className="mt-2 text-2xl font-bold">{tournament.name}</h1>
           <p className="text-gray-400">{tournament.status}</p>
         </div>
-        {isOwner && (
-          <div className="flex items-center gap-3">
-            {isDraft && (
-              <button
-                onClick={handleGenerate}
-                disabled={!canGenerate}
-                title={canGenerate ? "" : "Add at least 2 participants first"}
-                className="rounded-md bg-green-600 px-5 py-2 font-medium hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Generate bracket
-              </button>
-            )}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyLink}
+            className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
+          >
+            {copied ? "Copied!" : "Share"}
+          </button>
+          {isOwner && isDraft && (
+            <button
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              title={canGenerate ? "" : "Add at least 2 participants first"}
+              className="rounded-md bg-green-600 px-5 py-2 font-medium hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Generate bracket
+            </button>
+          )}
+          {isOwner && (
             <button
               onClick={handleDeleteTournament}
               className="rounded-md border border-red-800 px-4 py-2 text-sm text-red-400 hover:bg-red-900/40"
             >
               Delete
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {error && <p className="text-red-400">{error}</p>}

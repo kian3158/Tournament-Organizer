@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import TournamentPage from "./pages/TournamentPage";
+import SpectatorPage from "./pages/SpectatorPage";
 
 function Header() {
   const { user, logout } = useAuth();
@@ -61,6 +62,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/tournaments/:id" element={<TournamentPage />} />
+              <Route path="/watch/:id" element={<SpectatorPage />} />
             </Routes>
           </main>
         </div>
