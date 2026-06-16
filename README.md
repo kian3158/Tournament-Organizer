@@ -1,102 +1,84 @@
-# 🏆 Tournament Organizer
+# Tournament Organizer
 
 ![CI](https://github.com/kian3158/Tournament-Organizer/actions/workflows/ci.yml/badge.svg)
 
-A full-stack tournament organizer for esports and LAN-style competitions. Create
-a tournament, add participants, generate a bracket, and report results as games
-are played — the app advances winners automatically and updates every spectator
-live. Built for real use at game nights (online and in person) as well as to
-demonstrate end-to-end engineering.
+Run tournaments with all of your 2 friends.
 
-## Features
+A web app for running game-night and esports tournaments. Make a tournament, add
+players, pick a format, and click the winner as each game finishes. It builds the
+bracket, keeps score, and pushes updates live to anyone watching.
 
-- **Four tournament formats**, selectable per tournament:
-  - **Single elimination** — seeding and byes for any participant count.
-  - **Double elimination** — winners + losers brackets and a grand final with
-    bracket reset.
-  - **Round robin** — everyone plays everyone, ranked by a standings table.
-  - **Swiss** — record-based pairing generated round by round, avoiding rematches.
-- **Automatic bracket logic** — winners advance, losers drop (double-elim), byes
-  resolve themselves, and the tournament completes when the result is decided.
-- **Live updates** — spectators see results the moment they're reported, over
-  WebSockets (no refresh).
-- **Organizer accounts** — register/login with JWT auth; you manage your own
-  tournaments. Participants stay account-free (just names), so setup is fast.
-- **Fast manual result entry** — click a player to record the win, designed for
-  running games live.
+I built it to actually use with friends (online and in person), and to have a
+real full-stack project to point at.
 
-## Tech stack
+## Formats
 
-| Layer    | Tech |
-|----------|------|
-| Backend  | FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, PyJWT, bcrypt |
-| Frontend | React 18, TypeScript, Vite, TailwindCSS, React Router |
-| Realtime | WebSockets (Starlette / `websockets`) |
-| Database | PostgreSQL (Docker), SQLite (local dev/tests) |
-| Tooling  | Ruff, Black, Pytest (+coverage), ESLint-ready, Docker, GitHub Actions |
+- **Single elimination** with seeding and byes for any number of players.
+- **Double elimination** with a losers bracket and a grand-final reset.
+- **Round robin** where everyone plays everyone, ranked in a standings table.
+- **Swiss** that pairs players on similar records each round and avoids rematches.
 
-## Architecture
+## Stack
 
-A layered monorepo. Bracket logic lives in the service layer behind a
-`FormatStrategy` interface, so each format is a self-contained, unit-tested
-strategy — adding a format doesn't touch the API or UI.
+Backend is FastAPI + SQLAlchemy + Postgres (SQLite locally), with Alembic
+migrations and JWT auth. Frontend is React + TypeScript + Vite + Tailwind. Live
+updates run over WebSockets. Tests are pytest, linting is ruff/black, CI is
+GitHub Actions, and the whole thing runs in Docker.
 
-```
-api (routers)  →  services (bracket engine + formats/)  →  crud  →  models / db
-        ↘                schemas (Pydantic)             ↗
-```
+## Running it
 
-The bracket math (seeding, byes, double-elim drop routing, swiss pairing) is
-written as **pure functions** that return DB-agnostic match plans, which the
-service then persists — which is why it's testable in isolation and has ~98%
-coverage. Full write-up in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Getting started
-
-### With Docker (recommended)
+### Docker (easiest)
 
 ```bash
 docker compose up --build
 ```
 
-- Frontend: http://localhost:5173
-- API docs (Swagger): http://localhost:8000/docs
+Frontend on http://localhost:5173, API docs on http://localhost:8000/docs. This
+starts Postgres, runs migrations, and serves everything.
 
-This starts PostgreSQL, runs database migrations, and serves the API and the
-built frontend.
+### Locally
 
-### Local development
-
-**Backend** (Python 3.11+, Poetry):
+Backend (Python 3.11+, Poetry):
 
 ```bash
 cd backend
 poetry install
-poetry run alembic upgrade head      # creates the SQLite dev DB
+poetry run alembic upgrade head
 poetry run uvicorn app.main:app --reload
 ```
 
-**Frontend** (Node 20+):
+Frontend (Node 20+):
 
 ```bash
 cd frontend
 npm install
-npm run dev                          # http://localhost:5173
+npm run dev
 ```
 
-The frontend talks to `http://localhost:8000` by default; override with
-`VITE_API_BASE_URL`.
+The frontend calls http://localhost:8000 by default; set `VITE_API_BASE_URL` to
+change it.
 
 ## Tests
 
 ```bash
 cd backend
-poetry run pytest --cov=app --cov-report=term-missing
+poetry run pytest --cov=app
 ```
 
-100+ tests covering the bracket algorithms (all four formats, byes, reset,
-rematch avoidance), the service/persistence layer, the REST API, auth/ownership,
-and the WebSocket feed.
+Around 100 tests covering the bracket math for all four formats, the API, auth,
+and the live feed.
+
+## How it's put together
+
+Bracket logic lives in the service layer behind a small `FormatStrategy`
+interface, so each format is its own piece and adding one doesn't touch the API
+or UI. The pairing and seeding math is plain functions with no database in them,
+which keeps it easy to test. There's a longer write-up in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+```
+api  ->  services (bracket engine + formats)  ->  crud  ->  models / db
+```
 
 ## Project layout
 
@@ -106,23 +88,21 @@ frontend/   React + TS app (pages / components / api client / auth / hooks)
 docs/       product, architecture, domain model, roadmap, decisions, backlog
 ```
 
-## Documentation
+## Docs
 
-- [Product vision](docs/PRODUCT.md)
+- [Product](docs/PRODUCT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Domain model](docs/DOMAIN_MODEL.md)
-- [Roadmap & status](docs/ROADMAP.md)
-- [Decisions & current state](docs/DECISIONS.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Decisions](docs/DECISIONS.md)
 - [Backlog](docs/BACKLOG.md)
 
-## Notes & limitations
+## Notes
 
-- Double elimination currently requires a power-of-two participant count; byes
-  for other counts are on the [backlog](docs/BACKLOG.md). The other three formats
-  handle any count.
-- Set a strong `SECRET_KEY` (32+ random bytes) in any real deployment; the
-  default is a development placeholder.
+- Double elimination needs a power-of-two player count for now (byes for other
+  counts are on the [backlog](docs/BACKLOG.md)). The other three handle any number.
+- Change `SECRET_KEY` before deploying anywhere real; the default is just for local.
 
 ## License
 
-[MIT](LICENSE) © Kian Shahrami
+[MIT](LICENSE) © kian3158

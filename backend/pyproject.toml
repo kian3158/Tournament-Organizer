@@ -2,7 +2,7 @@
 name = "tournament-organizer-backend"
 version = "0.1.0"
 description = "Backend for tournament organizer app"
-authors = ["Kian Shahrami <kian.shahrami.1385@gmail.com>"]
+authors = ["kian3158"]
 license = "MIT"
 
 [tool.poetry.dependencies]
