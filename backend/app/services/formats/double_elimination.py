@@ -1,5 +1,12 @@
+from typing import Callable, Optional
+
 from .base import Bracket, FormatStrategy, MatchPlan
 from .single_elimination import seed_slots
+
+# A "source" links a not-yet-created downstream match into the slot that this
+# entrant will arrive in. ``None`` means the entrant doesn't exist (a bye), so
+# whatever it would have played simply passes the opponent through.
+Source = Optional[Callable[[int, str], None]]
 
 
 class DoubleEliminationFormat(FormatStrategy):
@@ -12,23 +19,24 @@ class DoubleEliminationFormat(FormatStrategy):
     wins (handing the winners champion their first loss), a reset match decides
     the title.
 
-    Note: currently requires a power-of-two participant count. Byes for other
-    counts are tracked in the backlog.
+    Non-power-of-two counts are padded up to the next power of two; the extra
+    winners-bracket slots become byes. A bye produces no loser, so the losers
+    bracket simply passes the lone dropper through instead of creating an empty
+    match.
     """
 
     def build(self, participant_ids: list[int]) -> list[MatchPlan]:
         n = len(participant_ids)
         if n < 2:
             raise ValueError("A bracket needs at least 2 participants.")
-        if n & (n - 1) != 0:
-            raise ValueError(
-                "Double elimination currently requires a power-of-two "
-                "number of participants (2, 4, 8, 16, ...)."
-            )
 
-        size = n
+        size = 1
+        while size < n:
+            size *= 2
         k = size.bit_length() - 1  # number of winners-bracket rounds
-        players = [participant_ids[s] for s in seed_slots(size)]
+        players: list[Optional[int]] = [
+            participant_ids[s] if s < n else None for s in seed_slots(size)
+        ]
         plans: list[MatchPlan] = []
 
         def add(round_number: int, bracket: str, a=None, b=None) -> MatchPlan:
@@ -68,51 +76,55 @@ def _build_winners_bracket(add, plans, players, size, k) -> list[list[int]]:
 
 
 def _build_losers_bracket(add, plans, wb_rounds, k):
-    """Returns the index of the losers-bracket final, or None when k == 1."""
+    """Build the losers bracket; return the index of its final match (or None)."""
     if k < 2:
         return None
 
+    last_match: dict[str, Optional[int]] = {"idx": None}
     round_no = 1
-    # First minor round: losers of winners round 1, paired up.
-    prev = []
-    wb1 = wb_rounds[0]
-    for m in range(0, len(wb1), 2):
+
+    def combine(s1: Source, s2: Source) -> Source:
+        """Merge two entrant sources into one survivor source.
+
+        With both present, a real match is created. With one missing (a bye),
+        the present entrant passes straight through. With neither, nothing
+        survives.
+        """
+        if s1 is None:
+            return s2
+        if s2 is None:
+            return s1
         lb = add(round_no, Bracket.LOSERS)
-        prev.append(lb.index)
-        _link_loser(plans[wb1[m]], lb.index, "A")
-        _link_loser(plans[wb1[m + 1]], lb.index, "B")
+        s1(lb.index, "A")
+        s2(lb.index, "B")
+        last_match["idx"] = lb.index
+        return _winner_source(plans, lb.index)
+
+    # Minor round 1: pair up the losers dropping from winners round 1.
+    sources = [_loser_source(plans, idx) for idx in wb_rounds[0]]
+    sources = [combine(sources[i], sources[i + 1]) for i in range(0, len(sources), 2)]
     round_no += 1
 
     for i in range(1, k):
-        # Major round: previous LB winners vs losers of winners round i + 1.
-        wb_drop = wb_rounds[i]
-        major = []
-        for m in range(len(prev)):
-            lb = add(round_no, Bracket.LOSERS)
-            major.append(lb.index)
-            _link_winner(plans[prev[m]], lb.index, "A")
-            _link_loser(plans[wb_drop[m]], lb.index, "B")
+        # Major round: survivors meet the losers dropping from winners round i+1.
+        drops = [_loser_source(plans, idx) for idx in wb_rounds[i]]
+        sources = [combine(sources[m], drops[m]) for m in range(len(sources))]
         round_no += 1
-        prev = major
 
-        # Minor round: pair up the major-round winners (when more than one).
-        if len(prev) > 1:
-            minor = []
-            for m in range(0, len(prev), 2):
-                lb = add(round_no, Bracket.LOSERS)
-                minor.append(lb.index)
-                _link_winner(plans[prev[m]], lb.index, "A")
-                _link_winner(plans[prev[m + 1]], lb.index, "B")
+        # Minor round: pair up the major-round survivors (when more than one).
+        if len(sources) > 1:
+            sources = [
+                combine(sources[j], sources[j + 1]) for j in range(0, len(sources), 2)
+            ]
             round_no += 1
-            prev = minor
 
-    return prev[0]
+    return last_match["idx"]
 
 
 def _build_grand_final(add, plans, wb_final, lb_champion, k) -> None:
     grand_final = add(k + 1, Bracket.GRAND_FINAL)
     _link_winner(plans[wb_final], grand_final.index, "A")
-    if k >= 2:
+    if lb_champion is not None:
         _link_winner(plans[lb_champion], grand_final.index, "B")
     else:
         # 2 players: the winners-final loser is the losers champion.
@@ -120,6 +132,19 @@ def _build_grand_final(add, plans, wb_final, lb_champion, k) -> None:
 
     # Reset match: populated only if the losers champion wins the grand final.
     add(k + 2, Bracket.GRAND_FINAL_RESET)
+
+
+def _loser_source(plans, idx) -> Source:
+    plan = plans[idx]
+    # A winners round-1 bye has an empty slot and contributes no loser.
+    if plan.round_number == 1 and (plan.player_a is None or plan.player_b is None):
+        return None
+    return lambda target, slot: _link_loser(plan, target, slot)
+
+
+def _winner_source(plans, idx) -> Source:
+    plan = plans[idx]
+    return lambda target, slot: _link_winner(plan, target, slot)
 
 
 def _link_winner(plan: MatchPlan, next_index: int, slot: str) -> None:
