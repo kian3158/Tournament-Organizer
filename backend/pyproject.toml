@@ -2,7 +2,8 @@
 name = "tournament-organizer-backend"
 version = "0.1.0"
 description = "Backend for tournament organizer app"
-authors = ["Your Name <you@example.com>"]
+authors = ["Kian Shahrami <kian.shahrami.1385@gmail.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.11"
