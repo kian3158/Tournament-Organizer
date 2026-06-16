@@ -9,6 +9,11 @@ class ParticipantCreate(BaseModel):
     type: str = "PLAYER"
 
 
+class ParticipantUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1)
+    seed: Optional[int] = None
+
+
 class ParticipantRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
