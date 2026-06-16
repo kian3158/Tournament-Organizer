@@ -3,18 +3,17 @@
 Things beyond v1. The top section is actively being worked on; the rest are
 ideas, not commitments.
 
-## In progress (v1.1) — `feature/tournament-editing`
+## Done in v1.1 — `feature/tournament-editing`
 
-Real-use gaps found after v1:
+Real-use gaps found after v1, now built:
 
-- **Edit/delete participants** — currently you can only add. Allow renaming and
-  removing participants while the tournament is still a draft (before the bracket
-  is generated).
-- **Delete a tournament** — owner can delete their own tournament (and its
+- [x] **Edit/delete participants** — rename or remove participants while the
+  tournament is still a draft (before the bracket is generated).
+- [x] **Delete a tournament** — owner can delete their own tournament (and its
   matches/participants).
-- **Correct a reported result** — fix a mis-clicked winner. Only allowed when it
-  wouldn't corrupt already-played downstream matches (elimination), or always for
-  round robin (just recomputes standings).
+- [x] **Correct a reported result** — fix a mis-clicked winner; re-propagates
+  downstream. Blocked when a later dependent match is already decided, or for
+  the grand final / locked swiss rounds. Always safe for round robin.
 
 ## Likely future features
 - **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
