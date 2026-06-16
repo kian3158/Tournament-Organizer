@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.tournament import TournamentFormat, TournamentStatus
 
@@ -22,6 +22,14 @@ class StandingRead(BaseModel):
 class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=1)
     format: TournamentFormat = TournamentFormat.SINGLE_ELIM
+    best_of: int = 1
+
+    @field_validator("best_of")
+    @classmethod
+    def _odd_and_positive(cls, v: int) -> int:
+        if v < 1 or v % 2 == 0:
+            raise ValueError("best_of must be a positive odd number (1, 3, 5, ...).")
+        return v
 
 
 class TournamentRead(BaseModel):
@@ -32,6 +40,7 @@ class TournamentRead(BaseModel):
     status: TournamentStatus
     format: TournamentFormat
     owner_id: int | None
+    best_of: int
 
 
 class BracketRead(BaseModel):

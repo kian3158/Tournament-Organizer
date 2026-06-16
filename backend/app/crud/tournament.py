@@ -14,8 +14,11 @@ def create(
     name: str,
     format: TournamentFormat,
     owner_id: Optional[int] = None,
+    best_of: int = 1,
 ) -> Tournament:
-    tournament = Tournament(name=name, format=format, owner_id=owner_id)
+    tournament = Tournament(
+        name=name, format=format, owner_id=owner_id, best_of=best_of
+    )
     db.add(tournament)
     db.commit()
     db.refresh(tournament)

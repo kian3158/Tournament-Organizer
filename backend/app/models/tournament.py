@@ -28,3 +28,5 @@ class Tournament(Base):
         nullable=False,
     )
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    # Games needed to win a match: 1, 3, 5, ... Winner needs (best_of+1)//2.
+    best_of = Column(Integer, default=1, nullable=False)
