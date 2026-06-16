@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import type { Participant } from "../api/types";
+import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from "./icons";
 
 interface Props {
   tournamentId: number;
@@ -125,14 +126,14 @@ export default function ParticipantManager({
                     className="text-green-400 hover:text-green-300"
                     title="Save"
                   >
-                    ✓
+                    <CheckIcon />
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
                     className="text-gray-500 hover:text-gray-300"
                     title="Cancel"
                   >
-                    ✕
+                    <CloseIcon />
                   </button>
                 </>
               ) : (
@@ -153,14 +154,14 @@ export default function ParticipantManager({
                         className="text-gray-500 hover:text-blue-400"
                         title="Rename"
                       >
-                        ✎
+                        <PencilIcon />
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
                         className="text-gray-500 hover:text-red-400"
                         title="Remove"
                       >
-                        ✕
+                        <TrashIcon />
                       </button>
                     </>
                   )}

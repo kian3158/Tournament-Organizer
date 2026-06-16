@@ -1,4 +1,5 @@
 import type { Match } from "../api/types";
+import { CheckIcon } from "./icons";
 
 interface Props {
   match: Match;
@@ -98,7 +99,7 @@ function Slot({
       className={`w-full text-left ${base} ${state} ${hover} disabled:cursor-default`}
     >
       <span className="truncate">{text}</span>
-      {isWinner && <span className="text-green-300">✓</span>}
+      {isWinner && <CheckIcon className="shrink-0 text-green-300" size={16} />}
     </button>
   );
 }
