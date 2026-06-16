@@ -3,6 +3,21 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class RosterMemberCreate(BaseModel):
+    name: str = Field(..., min_length=1)
+
+
+class RosterMemberUpdate(BaseModel):
+    name: str = Field(..., min_length=1)
+
+
+class RosterMemberRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
 class ParticipantCreate(BaseModel):
     name: str = Field(..., min_length=1)
     seed: Optional[int] = None
@@ -22,3 +37,4 @@ class ParticipantRead(BaseModel):
     name: str
     seed: Optional[int]
     type: str
+    members: list[RosterMemberRead] = []

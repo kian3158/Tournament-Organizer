@@ -1,5 +1,12 @@
 from .match import MatchRead, ResultReport
-from .participant import ParticipantCreate, ParticipantRead, ParticipantUpdate
+from .participant import (
+    ParticipantCreate,
+    ParticipantRead,
+    ParticipantUpdate,
+    RosterMemberCreate,
+    RosterMemberRead,
+    RosterMemberUpdate,
+)
 from .tournament import (
     BracketRead,
     StandingRead,
@@ -16,6 +23,9 @@ __all__ = [
     "ParticipantCreate",
     "ParticipantRead",
     "ParticipantUpdate",
+    "RosterMemberCreate",
+    "RosterMemberRead",
+    "RosterMemberUpdate",
     "MatchRead",
     "ResultReport",
     "UserCreate",

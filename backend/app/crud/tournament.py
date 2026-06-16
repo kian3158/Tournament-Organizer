@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.match import Match
 from app.models.participant import Participant
+from app.models.roster_member import RosterMember
 from app.models.tournament import Tournament, TournamentFormat
 
 
@@ -39,6 +40,16 @@ def delete(db: Session, tournament: Tournament) -> None:
     db.query(Match).filter(Match.tournament_id == tournament.id).delete(
         synchronize_session=False
     )
+    participant_ids = [
+        pid
+        for (pid,) in db.query(Participant.id).filter(
+            Participant.tournament_id == tournament.id
+        )
+    ]
+    if participant_ids:
+        db.query(RosterMember).filter(
+            RosterMember.participant_id.in_(participant_ids)
+        ).delete(synchronize_session=False)
     db.query(Participant).filter(Participant.tournament_id == tournament.id).delete(
         synchronize_session=False
     )

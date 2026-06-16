@@ -7,7 +7,14 @@ from app.db.session import get_db
 from app.models.participant import Participant
 from app.models.tournament import Tournament, TournamentStatus
 from app.models.user import User
-from app.schemas import ParticipantCreate, ParticipantRead, ParticipantUpdate
+from app.schemas import (
+    ParticipantCreate,
+    ParticipantRead,
+    ParticipantUpdate,
+    RosterMemberCreate,
+    RosterMemberRead,
+    RosterMemberUpdate,
+)
 
 router = APIRouter(prefix="/tournaments/{tournament_id}", tags=["participants"])
 
@@ -93,3 +100,74 @@ def delete_participant(
     _editable(tournament)
     participant = _get_participant(db, tournament_id, participant_id)
     crud.participant.delete(db, participant)
+
+
+def _team_member(db: Session, tournament_id: int, participant_id: int, member_id: int):
+    member = crud.roster_member.get(db, member_id)
+    if member is None or member.participant_id != participant_id:
+        raise HTTPException(status_code=404, detail="Roster member not found")
+    return member
+
+
+def _editable_team(
+    db: Session, tournament_id: int, participant_id: int, user: User
+) -> Participant:
+    tournament = _owned_tournament(db, tournament_id, user)
+    _editable(tournament)
+    participant = _get_participant(db, tournament_id, participant_id)
+    if participant.type != "TEAM":
+        raise HTTPException(
+            status_code=400, detail="Only team participants have a roster."
+        )
+    return participant
+
+
+@router.post(
+    "/participants/{participant_id}/members",
+    response_model=RosterMemberRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_member(
+    tournament_id: int,
+    participant_id: int,
+    payload: RosterMemberCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _editable_team(db, tournament_id, participant_id, current_user)
+    return crud.roster_member.create(
+        db, participant_id=participant_id, name=payload.name
+    )
+
+
+@router.patch(
+    "/participants/{participant_id}/members/{member_id}",
+    response_model=RosterMemberRead,
+)
+def update_member(
+    tournament_id: int,
+    participant_id: int,
+    member_id: int,
+    payload: RosterMemberUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _editable_team(db, tournament_id, participant_id, current_user)
+    member = _team_member(db, tournament_id, participant_id, member_id)
+    return crud.roster_member.update(db, member, payload.name)
+
+
+@router.delete(
+    "/participants/{participant_id}/members/{member_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_member(
+    tournament_id: int,
+    participant_id: int,
+    member_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _editable_team(db, tournament_id, participant_id, current_user)
+    member = _team_member(db, tournament_id, participant_id, member_id)
+    crud.roster_member.delete(db, member)

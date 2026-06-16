@@ -1,4 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+
 from .base import Base
 
 
@@ -11,4 +13,11 @@ class Participant(Base):
     )
     name = Column(String, nullable=False)
     seed = Column(Integer, nullable=True)  # lower = stronger; optional
-    type = Column(String, default="PLAYER")  # could be TEAM later
+    type = Column(String, default="PLAYER")  # "PLAYER" or "TEAM"
+
+    # Roster members, only meaningful when type == "TEAM".
+    members = relationship(
+        "RosterMember",
+        cascade="all, delete-orphan",
+        order_by="RosterMember.id",
+    )
