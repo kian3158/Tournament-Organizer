@@ -2,14 +2,10 @@
 
 ![CI](https://github.com/kian3158/Tournament-Organizer/actions/workflows/ci.yml/badge.svg)
 
-Run tournaments with all of your 2 friends.
-
 A web app for running game-night and esports tournaments. Make a tournament, add
 players, pick a format, and click the winner as each game finishes. It builds the
 bracket, keeps score, and pushes updates live to anyone watching.
 
-I built it to actually use with friends (online and in person), and to have a
-real full-stack project to point at.
 
 ## Formats
 
@@ -27,7 +23,7 @@ GitHub Actions, and the whole thing runs in Docker.
 
 ## Running it
 
-### Docker (easiest)
+### Docker
 
 ```bash
 docker compose up --build
