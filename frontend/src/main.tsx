@@ -13,33 +13,64 @@ import LoginPage from "./pages/LoginPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import TournamentPage from "./pages/TournamentPage";
 import SpectatorPage from "./pages/SpectatorPage";
+import ThemeToggle from "./components/ThemeToggle";
+
+function BrandMark() {
+  return (
+    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-accent-fg">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M6 4v4h5M6 20v-4h5M11 12h4M15 12l4-4M15 12l4 4" />
+      </svg>
+    </span>
+  );
+}
 
 function Header() {
   const { user, logout } = useAuth();
   return (
-    <header className="flex items-center justify-between border-b border-gray-800 px-8 py-4">
-      <Link to="/" className="text-xl font-bold">
-        Tournament Organizer
-      </Link>
-      {user ? (
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-400">{user.email}</span>
-          <button onClick={logout} className="text-blue-400 hover:underline">
-            Log out
-          </button>
-        </div>
-      ) : (
-        <Link to="/login" className="text-sm text-blue-400 hover:underline">
-          Log in
+    <header className="border-b bg-surface">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
+        <Link to="/" className="flex items-center gap-2.5">
+          <BrandMark />
+          <span className="text-lg font-semibold tracking-tight">
+            Tournament Organizer
+          </span>
         </Link>
-      )}
+        <div className="flex items-center gap-3 text-sm">
+          <ThemeToggle />
+          {user ? (
+            <>
+              <span className="hidden text-muted sm:inline">{user.email}</span>
+              <button
+                onClick={logout}
+                className="font-medium text-accent hover:underline"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="font-medium text-accent hover:underline">
+              Log in
+            </Link>
+          )}
+        </div>
+      </div>
     </header>
   );
 }
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <p className="text-gray-400">Loading…</p>;
+  if (loading) return <p className="text-muted">Loading…</p>;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
@@ -50,7 +81,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <div className="min-h-screen">
           <Header />
-          <main className="mx-auto max-w-5xl px-8 py-8">
+          <main className="mx-auto max-w-5xl px-6 py-8">
             <Routes>
               <Route
                 path="/"

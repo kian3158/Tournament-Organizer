@@ -1,3 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg: 247 247 249;
+  --surface: 255 255 255;
+  --elevated: 237 239 242;
+  --border: 226 227 231;
+  --fg: 24 24 29;
+  --muted: 107 110 120;
+  --accent: 91 74 240;
+  --accent-hover: 74 59 214;
+  --accent-fg: 255 255 255;
+  --win: 21 128 61;
+  --danger: 220 38 38;
+}
+
+.dark {
+  --bg: 12 13 18;
+  --surface: 22 23 30;
+  --elevated: 31 33 43;
+  --border: 42 44 56;
+  --fg: 243 244 246;
+  --muted: 148 152 166;
+  --accent: 124 108 255;
+  --accent-hover: 143 128 255;
+  --accent-fg: 255 255 255;
+  --win: 110 231 183;
+  --danger: 248 113 113;
+}
+
+@layer base {
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+}
