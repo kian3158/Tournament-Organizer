@@ -7,6 +7,7 @@ export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [name, setName] = useState("");
   const [format, setFormat] = useState<TournamentFormat>("SINGLE_ELIM");
+  const [bestOf, setBestOf] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +28,7 @@ export default function TournamentsPage() {
     if (!name.trim()) return;
     setError(null);
     try {
-      await api.createTournament(name.trim(), format);
+      await api.createTournament(name.trim(), format, bestOf);
       setName("");
       await refresh();
     } catch (e) {
@@ -55,6 +56,17 @@ export default function TournamentsPage() {
             <option value="DOUBLE_ELIM">Double elimination</option>
             <option value="ROUND_ROBIN">Round robin</option>
             <option value="SWISS">Swiss</option>
+          </select>
+          <select
+            value={bestOf}
+            onChange={(e) => setBestOf(Number(e.target.value))}
+            title="Games needed to win a match"
+            className="rounded-lg border bg-bg px-3 py-2 outline-none transition-colors focus:border-accent"
+          >
+            <option value={1}>Single game</option>
+            <option value={3}>Best of 3</option>
+            <option value={5}>Best of 5</option>
+            <option value={7}>Best of 7</option>
           </select>
           <button
             type="submit"

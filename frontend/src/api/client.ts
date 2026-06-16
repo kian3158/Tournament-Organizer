@@ -70,10 +70,14 @@ export const api = {
 
   getTournament: (id: number) => request<Tournament>(`/tournaments/${id}`),
 
-  createTournament: (name: string, format: TournamentFormat = "SINGLE_ELIM") =>
+  createTournament: (
+    name: string,
+    format: TournamentFormat = "SINGLE_ELIM",
+    bestOf = 1
+  ) =>
     request<Tournament>("/tournaments", {
       method: "POST",
-      body: JSON.stringify({ name, format }),
+      body: JSON.stringify({ name, format, best_of: bestOf }),
     }),
 
   listParticipants: (tournamentId: number) =>

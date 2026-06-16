@@ -23,6 +23,7 @@ export interface Tournament {
   status: TournamentStatus;
   format: TournamentFormat;
   owner_id: number | null;
+  best_of: number;
 }
 
 export interface RosterMember {
