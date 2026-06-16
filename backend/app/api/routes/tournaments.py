@@ -43,6 +43,7 @@ def create_tournament(
         format=payload.format,
         owner_id=current_user.id,
         best_of=payload.best_of,
+        third_place=payload.third_place,
     )
 
 

@@ -65,9 +65,41 @@ class BracketService:
         db.flush()
         self._auto_advance_byes(db, plans, index_to_match)
 
+        if tournament.third_place and tournament.format == TournamentFormat.SINGLE_ELIM:
+            self._add_third_place_match(db, tournament)
+
         tournament.status = TournamentStatus.ONGOING
         db.flush()
-        return list(index_to_match.values())
+        return list(db.query(Match).filter(Match.tournament_id == tournament.id))
+
+    def _add_third_place_match(self, db: Session, tournament: Tournament) -> None:
+        """Wire the two semifinal losers into a new third-place match."""
+        matches = db.query(Match).filter(Match.tournament_id == tournament.id).all()
+        finals = [m for m in matches if m.bracket is None and m.next_match_id is None]
+        if len(finals) != 1:
+            return
+        final = finals[0]
+        semis = [m for m in matches if m.next_match_id == final.id]
+        if len(semis) != 2:
+            return
+        # When the semifinal round is round 1 (4-slot bracket), a bye there means
+        # there's no second loser to play for third — skip in that case.
+        if final.round_number == 2 and any(
+            s.player_a_id is None or s.player_b_id is None for s in semis
+        ):
+            return
+
+        third = Match(
+            tournament_id=tournament.id,
+            round_number=final.round_number,
+            bracket=Bracket.THIRD_PLACE,
+        )
+        db.add(third)
+        db.flush()
+        for slot, semi in zip((MatchSlot.A, MatchSlot.B), semis):
+            semi.loser_next_match_id = third.id
+            semi.loser_next_match_slot = slot
+        db.flush()
 
     def _create_matches(
         self, db: Session, tournament: Tournament, plans
@@ -350,7 +382,7 @@ class BracketService:
                 tournament.status = TournamentStatus.COMPLETED
         elif match.bracket == Bracket.SWISS:
             self._advance_swiss(db, tournament, match.round_number)
-        elif match.next_match_id is None:
+        elif match.next_match_id is None and match.bracket != Bracket.THIRD_PLACE:
             # Single-elimination final (no bracket label).
             tournament.status = TournamentStatus.COMPLETED
 

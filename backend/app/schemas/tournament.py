@@ -23,6 +23,7 @@ class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=1)
     format: TournamentFormat = TournamentFormat.SINGLE_ELIM
     best_of: int = 1
+    third_place: bool = False
 
     @field_validator("best_of")
     @classmethod
@@ -41,6 +42,7 @@ class TournamentRead(BaseModel):
     format: TournamentFormat
     owner_id: int | None
     best_of: int
+    third_place: bool
 
 
 class BracketRead(BaseModel):

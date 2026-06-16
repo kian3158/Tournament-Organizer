@@ -12,6 +12,7 @@ class Bracket:
     GRAND_FINAL_RESET = "GRAND_FINAL_RESET"
     ROUND_ROBIN = "ROUND_ROBIN"
     SWISS = "SWISS"
+    THIRD_PLACE = "THIRD_PLACE"
 
 
 @dataclass
