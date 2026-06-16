@@ -56,7 +56,7 @@ export default function Bracket({
 
       {champion != null && (
         <div className="mb-6 rounded-md border border-green-700 bg-green-900/40 px-4 py-3 text-green-200">
-          🏆 Champion: <span className="font-bold">{nameOf(champion)}</span>
+          Champion: <span className="font-bold">{nameOf(champion)}</span>
         </div>
       )}
 

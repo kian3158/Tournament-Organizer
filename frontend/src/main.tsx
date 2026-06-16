@@ -18,7 +18,7 @@ function Header() {
   return (
     <header className="flex items-center justify-between border-b border-gray-800 px-8 py-4">
       <Link to="/" className="text-xl font-bold">
-        🏆 Tournament Organizer
+        Tournament Organizer
       </Link>
       {user ? (
         <div className="flex items-center gap-4 text-sm">
