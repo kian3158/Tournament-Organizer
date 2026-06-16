@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Bracket } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
@@ -10,6 +10,7 @@ import { useBracketSocket } from "../hooks/useBracketSocket";
 export default function TournamentPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const tournamentId = Number(id);
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,27 @@ export default function TournamentPage() {
     }
   }
 
+  async function handleCorrectWinner(matchId: number, winnerId: number) {
+    setError(null);
+    try {
+      await api.correctResult(matchId, winnerId);
+      await refresh();
+    } catch (e) {
+      setError(String((e as Error).message));
+    }
+  }
+
+  async function handleDeleteTournament() {
+    if (!window.confirm("Delete this tournament? This can't be undone.")) return;
+    setError(null);
+    try {
+      await api.deleteTournament(tournamentId);
+      navigate("/");
+    } catch (e) {
+      setError(String((e as Error).message));
+    }
+  }
+
   if (error && !bracket) return <p className="text-red-400">{error}</p>;
   if (!bracket) return <p className="text-gray-400">Loading…</p>;
 
@@ -66,15 +88,25 @@ export default function TournamentPage() {
           <h1 className="mt-2 text-2xl font-bold">{tournament.name}</h1>
           <p className="text-gray-400">{tournament.status}</p>
         </div>
-        {isOwner && isDraft && (
-          <button
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            title={canGenerate ? "" : "Add at least 2 participants first"}
-            className="rounded-md bg-green-600 px-5 py-2 font-medium hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Generate bracket
-          </button>
+        {isOwner && (
+          <div className="flex items-center gap-3">
+            {isDraft && (
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                title={canGenerate ? "" : "Add at least 2 participants first"}
+                className="rounded-md bg-green-600 px-5 py-2 font-medium hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Generate bracket
+              </button>
+            )}
+            <button
+              onClick={handleDeleteTournament}
+              className="rounded-md border border-red-800 px-4 py-2 text-sm text-red-400 hover:bg-red-900/40"
+            >
+              Delete
+            </button>
+          </div>
         )}
       </div>
 
@@ -91,6 +123,7 @@ export default function TournamentPage() {
         data={bracket}
         canReport={isOwner && tournament.status === "ONGOING"}
         onPickWinner={handlePickWinner}
+        onCorrectWinner={handleCorrectWinner}
       />
     </div>
   );

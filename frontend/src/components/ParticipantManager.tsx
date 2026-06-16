@@ -18,6 +18,12 @@ export default function ParticipantManager({
   const [name, setName] = useState("");
   const [seed, setSeed] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+
+  function fail(e: unknown) {
+    setError(String((e as Error).message));
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +39,29 @@ export default function ParticipantManager({
       setSeed("");
       onChange();
     } catch (e) {
-      setError(String((e as Error).message));
+      fail(e);
+    }
+  }
+
+  async function handleDelete(id: number) {
+    setError(null);
+    try {
+      await api.deleteParticipant(tournamentId, id);
+      onChange();
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  async function handleSaveEdit(id: number) {
+    if (!editName.trim()) return;
+    setError(null);
+    try {
+      await api.updateParticipant(tournamentId, id, { name: editName.trim() });
+      setEditingId(null);
+      onChange();
+    } catch (e) {
+      fail(e);
     }
   }
 
@@ -83,12 +111,61 @@ export default function ParticipantManager({
               key={p.id}
               className="flex items-center gap-2 rounded-md border border-gray-800 bg-gray-900 px-3 py-2"
             >
-              {p.seed != null && (
-                <span className="text-xs font-semibold text-gray-500">
-                  #{p.seed}
-                </span>
+              {editingId === p.id ? (
+                <>
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSaveEdit(p.id)}
+                    autoFocus
+                    className="min-w-0 flex-1 rounded border border-gray-700 bg-gray-800 px-2 py-1"
+                  />
+                  <button
+                    onClick={() => handleSaveEdit(p.id)}
+                    className="text-green-400 hover:text-green-300"
+                    title="Save"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="text-gray-500 hover:text-gray-300"
+                    title="Cancel"
+                  >
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <>
+                  {p.seed != null && (
+                    <span className="text-xs font-semibold text-gray-500">
+                      #{p.seed}
+                    </span>
+                  )}
+                  <span className="flex-1 truncate">{p.name}</span>
+                  {editable && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditingId(p.id);
+                          setEditName(p.name);
+                        }}
+                        className="text-gray-500 hover:text-blue-400"
+                        title="Rename"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="text-gray-500 hover:text-red-400"
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
+                </>
               )}
-              <span>{p.name}</span>
             </li>
           ))}
         </ul>
