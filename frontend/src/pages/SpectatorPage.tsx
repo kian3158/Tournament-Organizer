@@ -38,7 +38,11 @@ export default function SpectatorPage() {
           ← All tournaments
         </Link>
         <h1 className="mt-2 text-2xl font-semibold">{tournament.name}</h1>
-        <p className="text-sm text-muted">{tournament.status} · spectator view</p>
+        <p className="text-sm text-muted">
+          {tournament.status}
+          {tournament.best_of > 1 && ` · Best of ${tournament.best_of}`} ·
+          spectator view
+        </p>
       </div>
 
       <BracketView

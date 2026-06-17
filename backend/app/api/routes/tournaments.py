@@ -38,7 +38,12 @@ def create_tournament(
     current_user: User = Depends(get_current_user),
 ):
     return crud.tournament.create(
-        db, name=payload.name, format=payload.format, owner_id=current_user.id
+        db,
+        name=payload.name,
+        format=payload.format,
+        owner_id=current_user.id,
+        best_of=payload.best_of,
+        third_place=payload.third_place,
     )
 
 

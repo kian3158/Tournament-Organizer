@@ -70,10 +70,20 @@ export const api = {
 
   getTournament: (id: number) => request<Tournament>(`/tournaments/${id}`),
 
-  createTournament: (name: string, format: TournamentFormat = "SINGLE_ELIM") =>
+  createTournament: (
+    name: string,
+    format: TournamentFormat = "SINGLE_ELIM",
+    bestOf = 1,
+    thirdPlace = false
+  ) =>
     request<Tournament>("/tournaments", {
       method: "POST",
-      body: JSON.stringify({ name, format }),
+      body: JSON.stringify({
+        name,
+        format,
+        best_of: bestOf,
+        third_place: thirdPlace,
+      }),
     }),
 
   listParticipants: (tournamentId: number) =>
@@ -132,6 +142,12 @@ export const api = {
       `/tournaments/${tournamentId}/participants/${participantId}`,
       { method: "DELETE" }
     ),
+
+  reorderParticipants: (tournamentId: number, participantIds: number[]) =>
+    request<Participant[]>(`/tournaments/${tournamentId}/participants/order`, {
+      method: "PUT",
+      body: JSON.stringify({ participant_ids: participantIds }),
+    }),
 
   deleteTournament: (tournamentId: number) =>
     request<void>(`/tournaments/${tournamentId}`, { method: "DELETE" }),

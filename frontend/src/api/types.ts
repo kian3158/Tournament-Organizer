@@ -23,6 +23,8 @@ export interface Tournament {
   status: TournamentStatus;
   format: TournamentFormat;
   owner_id: number | null;
+  best_of: number;
+  third_place: boolean;
 }
 
 export interface RosterMember {
@@ -57,6 +59,7 @@ export interface Match {
     | "GRAND_FINAL_RESET"
     | "ROUND_ROBIN"
     | "SWISS"
+    | "THIRD_PLACE"
     | null;
   loser_next_match_id: number | null;
   loser_next_match_slot: "A" | "B" | null;

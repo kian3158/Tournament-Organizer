@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import type { Participant } from "../api/types";
-import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from "./icons";
+import {
+  CheckIcon,
+  CloseIcon,
+  GripIcon,
+  PencilIcon,
+  TrashIcon,
+} from "./icons";
 import RosterEditor from "./RosterEditor";
 
 interface Props {
@@ -23,9 +29,43 @@ export default function ParticipantManager({
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
+  const [dragId, setDragId] = useState<number | null>(null);
+
+  const sortedIds = useMemo(
+    () =>
+      [...participants]
+        .sort((a, b) => (a.seed ?? Infinity) - (b.seed ?? Infinity) || a.id - b.id)
+        .map((p) => p.id),
+    [participants]
+  );
+  const sig = sortedIds.join(",");
+  const [order, setOrder] = useState<number[]>(sortedIds);
+  // Re-sync local drag order whenever the participants (or their seeds) change.
+  useEffect(() => {
+    setOrder(sortedIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sig]);
+
+  const byId = new Map(participants.map((p) => [p.id, p]));
+  const ordered = order
+    .map((id) => byId.get(id))
+    .filter((p): p is Participant => p != null);
 
   function fail(e: unknown) {
     setError(String((e as Error).message));
+  }
+
+  function handleDrop(targetId: number) {
+    const from = order.indexOf(dragId ?? -1);
+    const to = order.indexOf(targetId);
+    setDragId(null);
+    if (from === -1 || to === -1 || from === to) return;
+    const next = [...order];
+    next.splice(from, 1);
+    next.splice(to, 0, order[from]);
+    setOrder(next);
+    setError(null);
+    api.reorderParticipants(tournamentId, next).then(onChange).catch(fail);
   }
 
   async function handleAdd(e: React.FormEvent) {
@@ -68,10 +108,6 @@ export default function ParticipantManager({
       fail(e);
     }
   }
-
-  const sorted = [...participants].sort(
-    (a, b) => (a.seed ?? Infinity) - (b.seed ?? Infinity) || a.id - b.id
-  );
 
   return (
     <section>
@@ -119,12 +155,27 @@ export default function ParticipantManager({
         <p className="text-muted">No participants yet.</p>
       ) : (
         <ul className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {sorted.map((p) => (
+          {ordered.map((p) => (
             <li
               key={p.id}
-              className="rounded-lg border bg-surface px-3 py-2 shadow-sm"
+              draggable={editable && editingId !== p.id}
+              onDragStart={() => setDragId(p.id)}
+              onDragOver={(e) => editable && e.preventDefault()}
+              onDrop={() => editable && handleDrop(p.id)}
+              onDragEnd={() => setDragId(null)}
+              className={`rounded-lg border bg-surface px-3 py-2 shadow-sm ${
+                dragId === p.id ? "opacity-40" : ""
+              }`}
             >
               <div className="flex items-center gap-2">
+                {editable && editingId !== p.id && (
+                  <span
+                    className="cursor-grab text-muted active:cursor-grabbing"
+                    title="Drag to set seed"
+                  >
+                    <GripIcon size={14} />
+                  </span>
+                )}
                 {editingId === p.id ? (
                   <>
                     <input

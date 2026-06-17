@@ -53,6 +53,23 @@ export function CloseIcon({ className, size = 15 }: IconProps) {
   );
 }
 
+export function GripIcon({ className, size = 16 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      {[7, 12, 17].map((cy) =>
+        [9, 15].map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.4" />)
+      )}
+    </svg>
+  );
+}
+
 export function SunIcon({ className, size = 16 }: IconProps) {
   return (
     <svg {...svgProps(size)} className={className} aria-hidden="true">

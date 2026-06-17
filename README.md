@@ -10,9 +10,33 @@ bracket, keeps score, and pushes updates live to anyone watching.
 ## Formats
 
 - **Single elimination** with seeding and byes for any number of players.
-- **Double elimination** with a losers bracket and a grand-final reset.
+- **Double elimination** with a losers bracket, a grand-final reset, and byes
+  for any player count.
 - **Round robin** where everyone plays everyone, ranked in a standings table.
 - **Swiss** that pairs players on similar records each round and avoids rematches.
+
+## Features
+
+- **Run a bracket live** — click the winner of each game and the bracket fills
+  in; spectators watch it update in real time.
+- **Match scores & best-of-N** — record game scores and set matches to best of
+  1, 3, 5, or 7.
+- **Editing & corrections** — rename or remove participants, delete tournaments,
+  and fix a mis-clicked result (it re-propagates downstream when that's safe).
+- **Seeding** — type seeds or drag participants to reorder them.
+- **Teams** — a participant can be a team with a managed roster.
+- **Third-place match** — optional for single elimination.
+- **Spectator link** — a read-only `/watch/:id` view that needs no login.
+- **Light & dark theme** — toggle in the header, remembered across visits.
+
+## Screenshots
+
+<!-- Drop captures into docs/screenshots/ and uncomment:
+![Bracket](docs/screenshots/bracket-dark.png)
+![Standings](docs/screenshots/standings-light.png)
+-->
+
+_Screenshots live in [`docs/screenshots/`](docs/screenshots/)._
 
 ## Stack
 
@@ -61,8 +85,8 @@ cd backend
 poetry run pytest --cov=app
 ```
 
-Around 100 tests covering the bracket math for all four formats, the API, auth,
-and the live feed.
+Around 145 tests covering the bracket math for all four formats, scoring and
+seeding, the API, auth, and the live feed.
 
 ## How it's put together
 
@@ -95,8 +119,8 @@ docs/       product, architecture, domain model, roadmap, decisions, backlog
 
 ## Notes
 
-- Double elimination needs a power-of-two player count for now (byes for other
-  counts are on the [backlog](docs/BACKLOG.md)). The other three handle any number.
+- All four formats handle any number of players; elimination brackets pad up to
+  a power of two with byes.
 - Change `SECRET_KEY` before deploying anywhere real; the default is just for local.
 
 ## License

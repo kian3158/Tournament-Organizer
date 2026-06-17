@@ -29,6 +29,11 @@ class ParticipantUpdate(BaseModel):
     seed: Optional[int] = None
 
 
+class SeedOrder(BaseModel):
+    # Participant ids in seed order (first = seed 1 = strongest).
+    participant_ids: list[int]
+
+
 class ParticipantRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

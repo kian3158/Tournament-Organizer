@@ -7,6 +7,8 @@ export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [name, setName] = useState("");
   const [format, setFormat] = useState<TournamentFormat>("SINGLE_ELIM");
+  const [bestOf, setBestOf] = useState(1);
+  const [thirdPlace, setThirdPlace] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +29,7 @@ export default function TournamentsPage() {
     if (!name.trim()) return;
     setError(null);
     try {
-      await api.createTournament(name.trim(), format);
+      await api.createTournament(name.trim(), format, bestOf, thirdPlace);
       setName("");
       await refresh();
     } catch (e) {
@@ -39,7 +41,10 @@ export default function TournamentsPage() {
     <div className="space-y-10">
       <section className="rounded-xl border bg-surface p-5 shadow-sm">
         <h1 className="mb-4 text-xl font-semibold">New tournament</h1>
-        <form onSubmit={handleCreate} className="flex flex-wrap gap-3">
+        <form
+          onSubmit={handleCreate}
+          className="flex flex-wrap items-center gap-3"
+        >
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -56,6 +61,28 @@ export default function TournamentsPage() {
             <option value="ROUND_ROBIN">Round robin</option>
             <option value="SWISS">Swiss</option>
           </select>
+          <select
+            value={bestOf}
+            onChange={(e) => setBestOf(Number(e.target.value))}
+            title="Games needed to win a match"
+            className="rounded-lg border bg-bg px-3 py-2 outline-none transition-colors focus:border-accent"
+          >
+            <option value={1}>Single game</option>
+            <option value={3}>Best of 3</option>
+            <option value={5}>Best of 5</option>
+            <option value={7}>Best of 7</option>
+          </select>
+          {format === "SINGLE_ELIM" && (
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={thirdPlace}
+                onChange={(e) => setThirdPlace(e.target.checked)}
+                className="accent-accent"
+              />
+              3rd place
+            </label>
+          )}
           <button
             type="submit"
             className="rounded-lg bg-accent px-5 py-2 font-medium text-accent-fg transition-colors hover:bg-accent-hover"

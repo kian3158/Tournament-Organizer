@@ -65,9 +65,41 @@ class BracketService:
         db.flush()
         self._auto_advance_byes(db, plans, index_to_match)
 
+        if tournament.third_place and tournament.format == TournamentFormat.SINGLE_ELIM:
+            self._add_third_place_match(db, tournament)
+
         tournament.status = TournamentStatus.ONGOING
         db.flush()
-        return list(index_to_match.values())
+        return list(db.query(Match).filter(Match.tournament_id == tournament.id))
+
+    def _add_third_place_match(self, db: Session, tournament: Tournament) -> None:
+        """Wire the two semifinal losers into a new third-place match."""
+        matches = db.query(Match).filter(Match.tournament_id == tournament.id).all()
+        finals = [m for m in matches if m.bracket is None and m.next_match_id is None]
+        if len(finals) != 1:
+            return
+        final = finals[0]
+        semis = [m for m in matches if m.next_match_id == final.id]
+        if len(semis) != 2:
+            return
+        # When the semifinal round is round 1 (4-slot bracket), a bye there means
+        # there's no second loser to play for third — skip in that case.
+        if final.round_number == 2 and any(
+            s.player_a_id is None or s.player_b_id is None for s in semis
+        ):
+            return
+
+        third = Match(
+            tournament_id=tournament.id,
+            round_number=final.round_number,
+            bracket=Bracket.THIRD_PLACE,
+        )
+        db.add(third)
+        db.flush()
+        for slot, semi in zip((MatchSlot.A, MatchSlot.B), semis):
+            semi.loser_next_match_id = third.id
+            semi.loser_next_match_slot = slot
+        db.flush()
 
     def _create_matches(
         self, db: Session, tournament: Tournament, plans
@@ -128,7 +160,7 @@ class BracketService:
         if match.winner_id is not None:
             raise BracketError("Match result has already been reported.")
 
-        self._set_scores(match, winner_id, score_a, score_b)
+        self._set_scores(match, winner_id, score_a, score_b, self._best_of(db, match))
         self._record_winner(db, match, winner_id)
         # Flush so completion checks (which query the DB) see this result;
         # the session uses autoflush=False.
@@ -161,7 +193,9 @@ class BracketService:
         self._record_winner(db, match, new_winner_id)
 
         if score_a is not None or score_b is not None:
-            self._set_scores(match, new_winner_id, score_a, score_b)
+            self._set_scores(
+                match, new_winner_id, score_a, score_b, self._best_of(db, match)
+            )
         elif match.score_a is not None and match.score_b is not None:
             # Flipping the winner flips which side has the higher score.
             match.score_a, match.score_b = match.score_b, match.score_a
@@ -243,12 +277,17 @@ class BracketService:
                 ):
                     lnxt.player_b_id = None
 
+    def _best_of(self, db: Session, match: Match) -> int:
+        tournament = db.get(Tournament, match.tournament_id)
+        return tournament.best_of if tournament is not None else 1
+
     def _set_scores(
         self,
         match: Match,
         winner_id: int,
         score_a: Optional[int],
         score_b: Optional[int],
+        best_of: int = 1,
     ) -> None:
         """Validate and store optional per-match scores."""
         if score_a is None and score_b is None:
@@ -261,9 +300,20 @@ class BracketService:
             raise BracketError(
                 "A match can't end in a tie; the winner needs the higher score."
             )
-        higher = match.player_a_id if score_a > score_b else match.player_b_id
-        if higher != winner_id:
+        winner_score = score_a if winner_id == match.player_a_id else score_b
+        loser_score = score_b if winner_id == match.player_a_id else score_a
+        if winner_score < loser_score:
             raise BracketError("The winner must have the higher score.")
+        if best_of > 1:
+            needed = (best_of + 1) // 2
+            if winner_score != needed:
+                raise BracketError(
+                    f"Best of {best_of}: the winner needs exactly {needed} games."
+                )
+            if loser_score >= needed:
+                raise BracketError(
+                    f"Best of {best_of}: the loser can't reach {needed} games."
+                )
         match.score_a = score_a
         match.score_b = score_b
 
@@ -332,7 +382,7 @@ class BracketService:
                 tournament.status = TournamentStatus.COMPLETED
         elif match.bracket == Bracket.SWISS:
             self._advance_swiss(db, tournament, match.round_number)
-        elif match.next_match_id is None:
+        elif match.next_match_id is None and match.bracket != Bracket.THIRD_PLACE:
             # Single-elimination final (no bracket label).
             tournament.status = TournamentStatus.COMPLETED
 
