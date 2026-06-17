@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import html2canvas from "html2canvas";
 import type { Match, Standing, Bracket as BracketData } from "../api/types";
 import MatchCard from "./MatchCard";
 
@@ -62,25 +63,49 @@ export default function Bracket({
     onCorrectWinner,
   };
 
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  async function exportImage() {
+    const node = exportRef.current;
+    if (!node) return;
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const canvas = await html2canvas(node, { backgroundColor: bg, scale: 2 });
+    const link = document.createElement("a");
+    const slug = tournament.name.trim().replace(/\s+/g, "-").toLowerCase();
+    link.download = `${slug || "tournament"}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
+
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold">
-        {isStandings ? "Standings & schedule" : "Bracket"}
-      </h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">
+          {isStandings ? "Standings & schedule" : "Bracket"}
+        </h2>
+        <button
+          onClick={exportImage}
+          className="rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-elevated"
+        >
+          Export PNG
+        </button>
+      </div>
 
-      {champion != null && (
-        <div className="mb-6 rounded-lg border border-win/40 bg-win/10 px-4 py-3 text-win">
-          Champion: <span className="font-bold">{nameOf(champion)}</span>
-        </div>
-      )}
+      <div ref={exportRef} className="p-1">
+        {champion != null && (
+          <div className="mb-6 rounded-lg border border-win/40 bg-win/10 px-4 py-3 text-win">
+            Champion: <span className="font-bold">{nameOf(champion)}</span>
+          </div>
+        )}
 
-      {isStandings ? (
-        <RoundRobin standings={data.standings ?? []} {...sectionProps} />
-      ) : isDouble ? (
-        <DoubleElimination {...sectionProps} />
-      ) : (
-        <SingleElimination {...sectionProps} />
-      )}
+        {isStandings ? (
+          <RoundRobin standings={data.standings ?? []} {...sectionProps} />
+        ) : isDouble ? (
+          <DoubleElimination {...sectionProps} />
+        ) : (
+          <SingleElimination {...sectionProps} />
+        )}
+      </div>
     </section>
   );
 }
