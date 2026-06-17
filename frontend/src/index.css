@@ -32,6 +32,29 @@
   --danger: 248 113 113;
 }
 
+/* Accent overrides — applied via data-accent on <html>. Purple is the default
+   (defined per theme above), so it has no override here. */
+[data-accent="red"] {
+  --accent: 220 38 38;
+  --accent-hover: 185 28 28;
+}
+[data-accent="orange"] {
+  --accent: 234 88 12;
+  --accent-hover: 194 65 12;
+}
+[data-accent="green"] {
+  --accent: 22 163 74;
+  --accent-hover: 21 128 61;
+}
+[data-accent="blue"] {
+  --accent: 37 99 235;
+  --accent-hover: 29 78 216;
+}
+[data-accent="bloodborne"] {
+  --accent: 150 22 22;
+  --accent-hover: 122 16 16;
+}
+
 @layer base {
   body {
     @apply bg-bg font-sans text-fg antialiased;

@@ -6,6 +6,10 @@ A web app for running game-night and esports tournaments. Make a tournament, add
 players, pick a format, and click the winner as each game finishes. It builds the
 bracket, keeps score, and pushes updates live to anyone watching.
 
+## Screenshots
+
+![Bracket](docs/screenshots/bracket.png)
+![Standings](docs/screenshots/standings.png)
 
 ## Formats
 
@@ -15,54 +19,42 @@ bracket, keeps score, and pushes updates live to anyone watching.
 - **Round robin** where everyone plays everyone, ranked in a standings table.
 - **Swiss** that pairs players on similar records each round and avoids rematches.
 
-## Features
+## What it does
 
-- **Run a bracket live** — click the winner of each game and the bracket fills
-  in; spectators watch it update in real time (the feed auto-reconnects if the
-  connection drops).
-- **Match scores & best-of-N** — record game scores and set matches to best of
-  1, 3, 5, or 7.
-- **Editing & corrections** — rename or remove participants, delete tournaments,
-  and fix a mis-clicked result (it re-propagates downstream when that's safe).
-- **Seeding** — type seeds or drag participants to reorder them.
-- **Teams** — a participant can be a team with a managed roster.
-- **Third-place match** — optional for single elimination.
-- **Quick presets** — one-click setups for common game nights.
-- **Export** — download a bracket or standings table as a PNG.
-- **Stats** — per-participant win/loss/title records across your tournaments.
-- **Spectator link** — a read-only `/watch/:id` view that needs no login.
-- **Light & dark theme** — toggle in the header, remembered across visits.
+You run the whole thing from one screen. Click a winner and the bracket fills in;
+anyone watching the spectator link sees it change without refreshing (and the
+live feed reconnects on its own if the connection blips).
 
-## Screenshots
+Matches can be a single game or best of 3/5/7, and you can record the game
+scores. Mis-clicked a result? Fix it, and the change propagates back through the
+bracket when that's safe to do. While a tournament is still a draft you can
+rename or remove players, drag them to set seeds, or delete the whole thing.
 
-<!-- Drop captures into docs/screenshots/ and uncomment:
-![Bracket](docs/screenshots/bracket-dark.png)
-![Standings](docs/screenshots/standings-light.png)
--->
-
-_Screenshots live in [`docs/screenshots/`](docs/screenshots/)._
+A few extras: participants can be teams with their own rosters, single
+elimination can add a third-place match, you can save a bracket or standings
+table as a PNG, and there's a stats page with each participant's win/loss/title
+record across your tournaments. Themes are light or dark with a pickable accent
+color.
 
 ## Stack
 
-Backend is FastAPI + SQLAlchemy + Postgres (SQLite locally), with Alembic
-migrations and JWT auth. Frontend is React + TypeScript + Vite + Tailwind. Live
-updates run over WebSockets. Tests are pytest (backend) and Vitest (frontend),
-linting is ruff/black, CI is GitHub Actions, and the whole thing runs in Docker.
+FastAPI, SQLAlchemy, and Postgres on the backend (SQLite locally), with Alembic
+migrations and JWT auth. The frontend is React, TypeScript, Vite, and Tailwind.
+Live updates go over WebSockets. Tests are pytest and Vitest, linting is
+ruff/black, CI runs on GitHub Actions, and the whole stack runs in Docker.
 
 ## Running it
 
-### Docker
+With Docker:
 
 ```bash
 docker compose up --build
 ```
 
-Frontend on http://localhost:5173, API docs on http://localhost:8000/docs. This
-starts Postgres, runs migrations, and serves everything.
+That starts Postgres, runs migrations, and serves everything — frontend on
+http://localhost:5173, API docs on http://localhost:8000/docs.
 
-### Locally
-
-Backend (Python 3.11+, Poetry):
+To run the pieces yourself, start the backend (Python 3.11+, Poetry):
 
 ```bash
 cd backend
@@ -71,7 +63,7 @@ poetry run alembic upgrade head
 poetry run uvicorn app.main:app --reload
 ```
 
-Frontend (Node 20+):
+and the frontend (Node 20+):
 
 ```bash
 cd frontend
@@ -79,8 +71,8 @@ npm install
 npm run dev
 ```
 
-The frontend calls http://localhost:8000 by default; set `VITE_API_BASE_URL` to
-change it.
+The frontend talks to http://localhost:8000 by default; set `VITE_API_BASE_URL`
+to point it elsewhere.
 
 ## Tests
 
@@ -89,44 +81,34 @@ cd backend && poetry run pytest --cov=app   # ~150 backend tests
 cd frontend && npm test                     # Vitest + React Testing Library
 ```
 
-The backend tests cover the bracket math for all four formats, scoring, seeding,
-stats, the API, auth, and the live feed. The frontend has component and API-client
-tests; both suites run in CI.
+The backend tests cover the bracket math for all four formats plus scoring,
+seeding, stats, the API, auth, and the live feed. The frontend has component and
+API-client tests. Both run in CI.
 
 ## How it's put together
 
-Bracket logic lives in the service layer behind a small `FormatStrategy`
-interface, so each format is its own piece and adding one doesn't touch the API
-or UI. The pairing and seeding math is plain functions with no database in them,
-which keeps it easy to test. There's a longer write-up in
+Each format is a small strategy behind one interface, so the pairing and seeding
+math is plain functions with no database in them — easy to test, and adding a
+format doesn't touch the API or UI. There's a longer write-up in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
 api  ->  services (bracket engine + formats)  ->  crud  ->  models / db
 ```
 
-## Project layout
-
 ```
 backend/    FastAPI app (api / services / crud / schemas / models), Alembic, tests
 frontend/   React + TS app (pages / components / api client / auth / hooks)
-docs/       product, architecture, domain model, roadmap, decisions, backlog
+docs/       product notes, architecture, backlog
 ```
 
-## Docs
-
-- [Product](docs/PRODUCT.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Domain model](docs/DOMAIN_MODEL.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Decisions](docs/DECISIONS.md)
-- [Backlog](docs/BACKLOG.md)
+See also [docs/PRODUCT.md](docs/PRODUCT.md) and [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Notes
 
-- All four formats handle any number of players; elimination brackets pad up to
-  a power of two with byes.
-- Change `SECRET_KEY` before deploying anywhere real; the default is just for local.
+Every format handles any number of players; elimination brackets pad up to a
+power of two with byes. Change `SECRET_KEY` before deploying anywhere real — the
+default is only meant for local use.
 
 ## License
 
