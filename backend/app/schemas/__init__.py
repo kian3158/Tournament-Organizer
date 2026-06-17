@@ -14,6 +14,7 @@ from .tournament import (
     TournamentCreate,
     TournamentRead,
 )
+from .stats import ParticipantStat
 from .user import LoginRequest, Token, UserCreate, UserRead
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "RosterMemberUpdate",
     "MatchRead",
     "ResultReport",
+    "ParticipantStat",
     "UserCreate",
     "UserRead",
     "LoginRequest",
