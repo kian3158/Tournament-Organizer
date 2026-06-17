@@ -36,7 +36,16 @@ export default function Bracket({
   const isStandings = matches.some(
     (m) => m.bracket === "ROUND_ROBIN" || m.bracket === "SWISS"
   );
-  const isDouble = !isStandings && matches.some((m) => m.bracket);
+  // Double elim is identified by its winners/losers labels — not by any label
+  // (single elim can carry a THIRD_PLACE match).
+  const isDouble =
+    !isStandings &&
+    matches.some(
+      (m) =>
+        m.bracket === "WINNERS" ||
+        m.bracket === "LOSERS" ||
+        m.bracket === "GRAND_FINAL"
+    );
 
   const champion =
     tournament.status === "COMPLETED"
