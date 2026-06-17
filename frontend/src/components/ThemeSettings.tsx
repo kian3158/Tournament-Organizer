@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { CogIcon } from "./icons";
 
 const ACCENTS = [
-  { id: "purple", label: "Purple", swatch: "#7c6cff" },
-  { id: "red", label: "Red", swatch: "#dc2626" },
   { id: "orange", label: "Orange", swatch: "#ea580c" },
+  { id: "red", label: "Red", swatch: "#dc2626" },
   { id: "green", label: "Green", swatch: "#16a34a" },
   { id: "blue", label: "Blue", swatch: "#2563eb" },
-  { id: "bloodborne", label: "Bloodborne", swatch: "#961616" },
+  { id: "purple", label: "Purple", swatch: "#7c6cff" },
+  { id: "bloodborne", label: "Bloodborne", swatch: "#b22222" },
 ];
 
 function currentAccent(): string {
-  return document.documentElement.dataset.accent || "purple";
+  return document.documentElement.dataset.accent || "orange";
 }
 
 export default function ThemeSettings() {
@@ -20,7 +20,7 @@ export default function ThemeSettings() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (accent === "purple") delete document.documentElement.dataset.accent;
+    if (accent === "orange") delete document.documentElement.dataset.accent;
     else document.documentElement.dataset.accent = accent;
     localStorage.setItem("accent", accent);
   }, [accent]);

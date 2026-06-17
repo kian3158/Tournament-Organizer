@@ -1,12 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {
-  BrowserRouter,
-  Link,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import "./index.css";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import LoginPage from "./pages/LoginPage";
@@ -16,6 +10,7 @@ import SpectatorPage from "./pages/SpectatorPage";
 import StatsPage from "./pages/StatsPage";
 import ThemeToggle from "./components/ThemeToggle";
 import ThemeSettings from "./components/ThemeSettings";
+import BloodborneEyes from "./components/BloodborneEyes";
 
 function BrandMark() {
   return (
@@ -54,20 +49,23 @@ function Header() {
             <>
               <Link
                 to="/stats"
-                className="font-medium text-accent hover:underline"
+                className="font-medium text-accent transition-colors hover:opacity-80"
               >
                 Stats
               </Link>
               <span className="hidden text-muted sm:inline">{user.email}</span>
               <button
                 onClick={logout}
-                className="font-medium text-accent hover:underline"
+                className="font-medium text-accent transition-colors hover:opacity-80"
               >
                 Log out
               </button>
             </>
           ) : (
-            <Link to="/login" className="font-medium text-accent hover:underline">
+            <Link
+              to="/login"
+              className="font-medium text-accent transition-colors hover:opacity-80"
+            >
               Log in
             </Link>
           )}
@@ -89,32 +87,35 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
         <div className="min-h-screen">
-          <Header />
-          <main className="mx-auto max-w-5xl px-6 py-8">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <RequireAuth>
-                    <TournamentsPage />
-                  </RequireAuth>
-                }
-              />
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/stats"
-                element={
-                  <RequireAuth>
-                    <StatsPage />
-                  </RequireAuth>
-                }
-              />
-              <Route path="/tournaments/:id" element={<TournamentPage />} />
-              <Route path="/watch/:id" element={<SpectatorPage />} />
-            </Routes>
-          </main>
+          <BloodborneEyes />
+          <div className="relative z-10">
+            <Header />
+            <main className="mx-auto max-w-5xl px-6 py-8">
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <RequireAuth>
+                      <TournamentsPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="/login" element={<LoginPage />} />
+                <Route
+                  path="/stats"
+                  element={
+                    <RequireAuth>
+                      <StatsPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="/tournaments/:id" element={<TournamentPage />} />
+                <Route path="/watch/:id" element={<SpectatorPage />} />
+              </Routes>
+            </main>
+          </div>
         </div>
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
