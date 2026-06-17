@@ -15,6 +15,7 @@ import TournamentPage from "./pages/TournamentPage";
 import SpectatorPage from "./pages/SpectatorPage";
 import StatsPage from "./pages/StatsPage";
 import ThemeToggle from "./components/ThemeToggle";
+import ThemeSettings from "./components/ThemeSettings";
 
 function BrandMark() {
   return (
@@ -47,6 +48,7 @@ function Header() {
           </span>
         </Link>
         <div className="flex items-center gap-3 text-sm">
+          <ThemeSettings />
           <ThemeToggle />
           {user ? (
             <>
