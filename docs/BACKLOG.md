@@ -25,12 +25,20 @@ real features):
 - [x] **Teams with rosters** — a participant can be a team with managed member
   names (add/rename/remove in draft), shown with a Team badge.
 
+## Done in v1.2 — `feature/bestof-seeding-thirdplace`
+
+- [x] **Best-of-N** — matches can be best of 1/3/5/7; scores are validated
+  against the majority needed to win.
+- [x] **Manual seeding** — drag participants to reorder; seeds are assigned by
+  position (plus a bulk reorder endpoint).
+- [x] **Third-place match** — optional extra match between the semifinal losers
+  in single elimination.
+- [x] **Light / dark theme** — header toggle backed by semantic color tokens,
+  remembered across visits.
+
 ## Likely future features
 - **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
   (Vercel/Netlify) so there's a real URL. Highest resume payoff.
-- **Best-of-N series** — group several games into one match result.
-- **Seeding controls** — manual seeding / drag-to-reorder before generating.
-- **Third-place match** in single-elimination.
 - **Tournament templates / presets** for quick recurring game nights.
 
 ## Testing & robustness
@@ -43,7 +51,6 @@ real features):
 - Match scheduling / time slots for in-person events.
 - Basic stats per participant across tournaments.
 - README screenshots / demo GIF.
-- Dark mode toggle (currently dark-only).
 
 ## Bigger / maybe-never
 - Public hosting / multi-tenant SaaS.
