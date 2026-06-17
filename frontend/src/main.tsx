@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import TournamentPage from "./pages/TournamentPage";
 import SpectatorPage from "./pages/SpectatorPage";
+import StatsPage from "./pages/StatsPage";
 import ThemeToggle from "./components/ThemeToggle";
 
 function BrandMark() {
@@ -49,6 +50,12 @@ function Header() {
           <ThemeToggle />
           {user ? (
             <>
+              <Link
+                to="/stats"
+                className="font-medium text-accent hover:underline"
+              >
+                Stats
+              </Link>
               <span className="hidden text-muted sm:inline">{user.email}</span>
               <button
                 onClick={logout}
@@ -92,6 +99,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/stats"
+                element={
+                  <RequireAuth>
+                    <StatsPage />
+                  </RequireAuth>
+                }
+              />
               <Route path="/tournaments/:id" element={<TournamentPage />} />
               <Route path="/watch/:id" element={<SpectatorPage />} />
             </Routes>

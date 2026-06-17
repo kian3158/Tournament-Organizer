@@ -36,15 +36,22 @@ real features):
 - [x] **Light / dark theme** — header toggle backed by semantic color tokens,
   remembered across visits.
 
+## Done in v1.3 — `feature/tests-and-extras`
+
+- [x] **Frontend tests** — Vitest + React Testing Library (component + API-client
+  tests), wired into CI.
+- [x] **WebSocket reconnect** — the live feed reconnects with backoff after a drop.
+- [x] **Tournament presets** — one-click setups in the create form.
+- [x] **Export bracket as PNG** — via html2canvas, from the bracket/standings view.
+- [x] **Per-participant stats** — win/loss/title records aggregated by name across
+  the owner's tournaments, on a `/stats` page.
+
 ## Likely future features
 - **Deploy it live** — host backend + Postgres (Render/Railway) and frontend
   (Vercel/Netlify) so there's a real URL. Highest resume payoff.
-- **Tournament templates / presets** for quick recurring game nights.
 
 ## Testing & robustness
-- **Frontend tests** — none yet; add Vitest + React Testing Library.
 - **End-to-end tests** — a Playwright happy-path test through the UI.
-- **WebSocket reconnect** — the live feed currently drops if the server blips.
 
 ## Nice-to-haves
 - Export bracket as image/PDF.

@@ -80,3 +80,12 @@ export interface Bracket {
   matches: Match[];
   standings: Standing[] | null;
 }
+
+export interface ParticipantStat {
+  name: string;
+  tournaments: number;
+  played: number;
+  wins: number;
+  losses: number;
+  titles: number;
+}
