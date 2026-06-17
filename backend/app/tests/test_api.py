@@ -24,8 +24,23 @@ def test_create_and_get_tournament(client, auth_headers):
     assert t["status"] == "DRAFT"
     assert t["format"] == "SINGLE_ELIM"
 
-    # Reading a tournament is public (no auth needed).
-    r = client.get(f"/tournaments/{t['id']}")
+    # The owner can read their tournament.
+    r = client.get(f"/tournaments/{t['id']}", headers=auth_headers)
+    assert r.status_code == 200
+    assert r.json()["name"] == "Cup"
+
+
+def test_read_access_control(client, auth_headers):
+    t = create_tournament(client, auth_headers)
+    token = t["share_token"]
+
+    # Anonymous and non-owner reads are rejected with 404 (no existence leak).
+    assert client.get(f"/tournaments/{t['id']}").status_code == 404
+    intruder = register_and_login(client, email="peeker@example.com")
+    assert client.get(f"/tournaments/{t['id']}", headers=intruder).status_code == 404
+
+    # The share token grants read access without logging in.
+    r = client.get(f"/tournaments/{t['id']}?token={token}")
     assert r.status_code == 200
     assert r.json()["name"] == "Cup"
 
@@ -79,7 +94,9 @@ def test_full_flow_to_champion(client, auth_headers):
     assert bracket["tournament"]["status"] == "ONGOING"
 
     while True:
-        matches = client.get(f"/tournaments/{tid}/bracket").json()["matches"]
+        matches = client.get(
+            f"/tournaments/{tid}/bracket", headers=auth_headers
+        ).json()["matches"]
         playable = [
             m
             for m in matches
@@ -97,7 +114,7 @@ def test_full_flow_to_champion(client, auth_headers):
         )
         assert resp.status_code == 200, resp.text
 
-    final = client.get(f"/tournaments/{tid}").json()
+    final = client.get(f"/tournaments/{tid}", headers=auth_headers).json()
     assert final["status"] == "COMPLETED"
 
 

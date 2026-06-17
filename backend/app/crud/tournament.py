@@ -1,3 +1,4 @@
+import secrets
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -23,6 +24,7 @@ def create(
         owner_id=owner_id,
         best_of=best_of,
         third_place=third_place,
+        share_token=secrets.token_urlsafe(12),
     )
     db.add(tournament)
     db.commit()

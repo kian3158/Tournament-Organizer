@@ -1,9 +1,11 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.api.bracket import build_bracket_read
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user
 from app.db.session import get_db
 from app.models.tournament import Tournament
 from app.models.user import User
@@ -31,6 +33,18 @@ def _require_owner(tournament: Tournament, user: User) -> None:
         raise HTTPException(status_code=403, detail="You do not own this tournament")
 
 
+def _require_read_access(
+    tournament: Tournament, user: Optional[User], token: Optional[str]
+) -> None:
+    """Readable by the owner, or by anyone holding the share token. Otherwise
+    a 404 (so we don't even confirm the tournament exists)."""
+    if user is not None and tournament.owner_id == user.id:
+        return
+    if token and tournament.share_token and token == tournament.share_token:
+        return
+    raise HTTPException(status_code=404, detail="Tournament not found")
+
+
 @router.post("", response_model=TournamentRead, status_code=status.HTTP_201_CREATED)
 def create_tournament(
     payload: TournamentCreate,
@@ -56,8 +70,15 @@ def list_tournaments(
 
 
 @router.get("/{tournament_id}", response_model=TournamentRead)
-def get_tournament(tournament_id: int, db: Session = Depends(get_db)):
-    return _get_tournament_or_404(db, tournament_id)
+def get_tournament(
+    tournament_id: int,
+    token: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    tournament = _get_tournament_or_404(db, tournament_id)
+    _require_read_access(tournament, current_user, token)
+    return tournament
 
 
 @router.delete("/{tournament_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -91,6 +112,12 @@ async def generate_bracket(
 
 
 @router.get("/{tournament_id}/bracket", response_model=BracketRead)
-def get_bracket(tournament_id: int, db: Session = Depends(get_db)):
-    _get_tournament_or_404(db, tournament_id)
+def get_bracket(
+    tournament_id: int,
+    token: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    tournament = _get_tournament_or_404(db, tournament_id)
+    _require_read_access(tournament, current_user, token)
     return build_bracket_read(db, tournament_id)

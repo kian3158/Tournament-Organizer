@@ -25,6 +25,7 @@ export interface Tournament {
   owner_id: number | null;
   best_of: number;
   third_place: boolean;
+  share_token: string | null;
 }
 
 export interface RosterMember {

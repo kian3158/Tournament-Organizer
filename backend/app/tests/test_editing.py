@@ -21,7 +21,9 @@ def make(client, headers, fmt="SINGLE_ELIM", players=0, name="T"):
 
 def play_all(client, headers, tid):
     for _ in range(100):
-        ms = client.get(f"/tournaments/{tid}/bracket").json()["matches"]
+        ms = client.get(f"/tournaments/{tid}/bracket", headers=headers).json()[
+            "matches"
+        ]
         ready = [
             m
             for m in ms
@@ -58,7 +60,9 @@ def test_delete_participant(client, auth_headers):
         f"/tournaments/{t['id']}/participants/{ids[0]}", headers=auth_headers
     )
     assert r.status_code == 204
-    remaining = client.get(f"/tournaments/{t['id']}/participants").json()
+    remaining = client.get(
+        f"/tournaments/{t['id']}/participants", headers=auth_headers
+    ).json()
     assert len(remaining) == 1
 
 
@@ -101,7 +105,9 @@ def test_delete_tournament(client, auth_headers):
         client.delete(f"/tournaments/{t['id']}", headers=auth_headers).status_code
         == 204
     )
-    assert client.get(f"/tournaments/{t['id']}").status_code == 404
+    assert (
+        client.get(f"/tournaments/{t['id']}", headers=auth_headers).status_code == 404
+    )
 
 
 def test_non_owner_cannot_delete_tournament(client, auth_headers):
@@ -116,7 +122,9 @@ def test_non_owner_cannot_delete_tournament(client, auth_headers):
 def test_correct_result_repropagates(client, auth_headers):
     t, ids = make(client, auth_headers, players=4)
     client.post(f"/tournaments/{t['id']}/generate", headers=auth_headers)
-    ms = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"]
+    ms = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ]
     r1 = next(m for m in ms if m["round_number"] == 1)
 
     client.post(
@@ -132,7 +140,9 @@ def test_correct_result_repropagates(client, auth_headers):
     assert r.status_code == 200, r.text
     assert r.json()["winner_id"] == r1["player_b_id"]
 
-    ms2 = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"]
+    ms2 = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ]
     final = next(m for m in ms2 if m["next_match_id"] is None)
     assert r1["player_b_id"] in (final["player_a_id"], final["player_b_id"])
     assert r1["player_a_id"] not in (final["player_a_id"], final["player_b_id"])
@@ -143,7 +153,9 @@ def test_correct_blocked_when_downstream_decided(client, auth_headers):
     client.post(f"/tournaments/{t['id']}/generate", headers=auth_headers)
     play_all(client, auth_headers, t["id"])
 
-    ms = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"]
+    ms = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ]
     r1 = next(m for m in ms if m["round_number"] == 1)
     r = client.patch(
         f"/matches/{r1['id']}/result",
@@ -156,7 +168,9 @@ def test_correct_blocked_when_downstream_decided(client, auth_headers):
 def test_correct_result_round_robin(client, auth_headers):
     t, ids = make(client, auth_headers, fmt="ROUND_ROBIN", players=3)
     client.post(f"/tournaments/{t['id']}/generate", headers=auth_headers)
-    m = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"][0]
+    m = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ][0]
     client.post(
         f"/matches/{m['id']}/result",
         json={"winner_id": m["player_a_id"]},
@@ -176,7 +190,9 @@ def test_cannot_correct_grand_final(client, auth_headers):
     client.post(f"/tournaments/{t['id']}/generate", headers=auth_headers)
     play_all(client, auth_headers, t["id"])
 
-    ms = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"]
+    ms = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ]
     gf = next(m for m in ms if m["bracket"] == "GRAND_FINAL")
     other = (
         gf["player_b_id"] if gf["winner_id"] == gf["player_a_id"] else gf["player_a_id"]

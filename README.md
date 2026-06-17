@@ -8,8 +8,8 @@ bracket, keeps score, and pushes updates live to anyone watching.
 
 ## Screenshots
 
-![Bracket](docs/screenshots/bracket.png)
-![Standings](docs/screenshots/standings.png)
+![Bracket](docs/screenshots/Brackets.png)
+![Standings](docs/screenshots/Standings.png)
 
 ## Formats
 
