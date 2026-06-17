@@ -67,6 +67,18 @@
   --danger: 235 110 96;
 }
 
+/* Occasional blink for the Bloodborne background eyes. */
+@keyframes bb-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.06);
+  }
+}
+
 @layer base {
   body {
     @apply bg-bg font-sans text-fg antialiased;
