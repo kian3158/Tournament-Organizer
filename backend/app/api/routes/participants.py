@@ -1,8 +1,10 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user
 from app.db.session import get_db
 from app.models.participant import Participant
 from app.models.tournament import Tournament, TournamentStatus
@@ -68,8 +70,20 @@ def add_participant(
 
 
 @router.get("/participants", response_model=list[ParticipantRead])
-def list_participants(tournament_id: int, db: Session = Depends(get_db)):
-    if crud.tournament.get(db, tournament_id) is None:
+def list_participants(
+    tournament_id: int,
+    token: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    tournament = crud.tournament.get(db, tournament_id)
+    if tournament is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    is_owner = current_user is not None and tournament.owner_id == current_user.id
+    has_token = bool(
+        token and tournament.share_token and token == tournament.share_token
+    )
+    if not (is_owner or has_token):
         raise HTTPException(status_code=404, detail="Tournament not found")
     return crud.participant.list_for_tournament(db, tournament_id)
 

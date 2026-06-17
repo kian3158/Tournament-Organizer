@@ -43,6 +43,7 @@ class TournamentRead(BaseModel):
     owner_id: int | None
     best_of: int
     third_place: bool
+    share_token: str | None
 
 
 class BracketRead(BaseModel):

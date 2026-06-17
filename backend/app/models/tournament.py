@@ -28,6 +28,8 @@ class Tournament(Base):
         nullable=False,
     )
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    # Unguessable token; anyone with it can view (spectate). Owner reads via auth.
+    share_token = Column(String, unique=True, index=True, nullable=True)
     # Games needed to win a match: 1, 3, 5, ... Winner needs (best_of+1)//2.
     best_of = Column(Integer, default=1, nullable=False)
     # Single elimination: add a match between the two semifinal losers.
