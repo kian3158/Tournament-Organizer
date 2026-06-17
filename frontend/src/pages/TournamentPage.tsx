@@ -28,7 +28,8 @@ export default function TournamentPage() {
   }, [refresh]);
 
   // Live updates: the server pushes a fresh bracket whenever it changes.
-  useBracketSocket(tournamentId, setBracket);
+  // The socket needs the share token, which arrives with the bracket data.
+  useBracketSocket(tournamentId, setBracket, bracket?.tournament.share_token);
 
   async function handleGenerate() {
     setError(null);
@@ -66,7 +67,8 @@ export default function TournamentPage() {
   }
 
   async function handleCopyLink() {
-    const url = `${window.location.origin}/watch/${tournamentId}`;
+    const token = bracket?.tournament.share_token ?? "";
+    const url = `${window.location.origin}/watch/${tournamentId}?token=${token}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Bracket } from "../api/types";
 import BracketView from "../components/Bracket";
@@ -8,23 +8,25 @@ import { useBracketSocket } from "../hooks/useBracketSocket";
 // Read-only, login-free view of a tournament, meant to be shared with spectators.
 export default function SpectatorPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
   const tournamentId = Number(id);
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     return api
-      .getBracket(tournamentId)
+      .getBracket(tournamentId, token)
       .then(setBracket)
       .catch((e) => setError(String(e.message ?? e)));
-  }, [tournamentId]);
+  }, [tournamentId, token]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  // Live updates while spectating.
-  useBracketSocket(tournamentId, setBracket);
+  // Live updates while spectating (uses the share token from the link).
+  useBracketSocket(tournamentId, setBracket, token);
 
   if (error && !bracket) return <p className="text-danger">{error}</p>;
   if (!bracket) return <p className="text-muted">Loading…</p>;

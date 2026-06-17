@@ -11,10 +11,12 @@ import type { Bracket } from "../api/types";
  */
 export function useBracketSocket(
   tournamentId: number,
-  onUpdate: (bracket: Bracket) => void
+  onUpdate: (bracket: Bracket) => void,
+  token: string | null | undefined
 ) {
   useEffect(() => {
-    if (!Number.isFinite(tournamentId)) return;
+    // The live feed needs the share token; wait until we have it.
+    if (!Number.isFinite(tournamentId) || !token) return;
 
     let closed = false;
     let socket: WebSocket | null = null;
@@ -22,7 +24,7 @@ export function useBracketSocket(
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     function connect() {
-      socket = new WebSocket(bracketSocketUrl(tournamentId));
+      socket = new WebSocket(bracketSocketUrl(tournamentId, token as string));
       socket.onmessage = (event) => {
         try {
           onUpdate(JSON.parse(event.data) as Bracket);
@@ -47,5 +49,5 @@ export function useBracketSocket(
       if (timer) clearTimeout(timer);
       socket?.close();
     };
-  }, [tournamentId, onUpdate]);
+  }, [tournamentId, onUpdate, token]);
 }

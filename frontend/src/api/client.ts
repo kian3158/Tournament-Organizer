@@ -22,9 +22,9 @@ export function setToken(token: string | null) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-export function bracketSocketUrl(tournamentId: number): string {
+export function bracketSocketUrl(tournamentId: number, token: string): string {
   const wsBase = BASE_URL.replace(/^http/, "ws");
-  return `${wsBase}/ws/tournaments/${tournamentId}`;
+  return `${wsBase}/ws/tournaments/${tournamentId}?token=${encodeURIComponent(token)}`;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -160,8 +160,11 @@ export const api = {
       method: "POST",
     }),
 
-  getBracket: (tournamentId: number) =>
-    request<Bracket>(`/tournaments/${tournamentId}/bracket`),
+  getBracket: (tournamentId: number, token?: string | null) =>
+    request<Bracket>(
+      `/tournaments/${tournamentId}/bracket` +
+        (token ? `?token=${encodeURIComponent(token)}` : "")
+    ),
 
   reportResult: (
     matchId: number,
