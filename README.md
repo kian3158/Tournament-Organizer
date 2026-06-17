@@ -18,7 +18,8 @@ bracket, keeps score, and pushes updates live to anyone watching.
 ## Features
 
 - **Run a bracket live** — click the winner of each game and the bracket fills
-  in; spectators watch it update in real time.
+  in; spectators watch it update in real time (the feed auto-reconnects if the
+  connection drops).
 - **Match scores & best-of-N** — record game scores and set matches to best of
   1, 3, 5, or 7.
 - **Editing & corrections** — rename or remove participants, delete tournaments,
@@ -26,6 +27,9 @@ bracket, keeps score, and pushes updates live to anyone watching.
 - **Seeding** — type seeds or drag participants to reorder them.
 - **Teams** — a participant can be a team with a managed roster.
 - **Third-place match** — optional for single elimination.
+- **Quick presets** — one-click setups for common game nights.
+- **Export** — download a bracket or standings table as a PNG.
+- **Stats** — per-participant win/loss/title records across your tournaments.
 - **Spectator link** — a read-only `/watch/:id` view that needs no login.
 - **Light & dark theme** — toggle in the header, remembered across visits.
 
@@ -42,8 +46,8 @@ _Screenshots live in [`docs/screenshots/`](docs/screenshots/)._
 
 Backend is FastAPI + SQLAlchemy + Postgres (SQLite locally), with Alembic
 migrations and JWT auth. Frontend is React + TypeScript + Vite + Tailwind. Live
-updates run over WebSockets. Tests are pytest, linting is ruff/black, CI is
-GitHub Actions, and the whole thing runs in Docker.
+updates run over WebSockets. Tests are pytest (backend) and Vitest (frontend),
+linting is ruff/black, CI is GitHub Actions, and the whole thing runs in Docker.
 
 ## Running it
 
@@ -81,12 +85,13 @@ change it.
 ## Tests
 
 ```bash
-cd backend
-poetry run pytest --cov=app
+cd backend && poetry run pytest --cov=app   # ~150 backend tests
+cd frontend && npm test                     # Vitest + React Testing Library
 ```
 
-Around 145 tests covering the bracket math for all four formats, scoring and
-seeding, the API, auth, and the live feed.
+The backend tests cover the bracket math for all four formats, scoring, seeding,
+stats, the API, auth, and the live feed. The frontend has component and API-client
+tests; both suites run in CI.
 
 ## How it's put together
 
