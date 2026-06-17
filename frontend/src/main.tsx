@@ -54,20 +54,20 @@ function Header() {
             <>
               <Link
                 to="/stats"
-                className="font-medium text-accent hover:underline"
+                className="font-medium text-accent transition-colors hover:opacity-80"
               >
                 Stats
               </Link>
               <span className="hidden text-muted sm:inline">{user.email}</span>
               <button
                 onClick={logout}
-                className="font-medium text-accent hover:underline"
+                className="font-medium text-accent transition-colors hover:opacity-80"
               >
                 Log out
               </button>
             </>
           ) : (
-            <Link to="/login" className="font-medium text-accent hover:underline">
+            <Link to="/login" className="font-medium text-accent transition-colors hover:opacity-80">
               Log in
             </Link>
           )}

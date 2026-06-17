@@ -11,8 +11,8 @@
   --border: 226 227 231;
   --fg: 24 24 29;
   --muted: 107 110 120;
-  --accent: 91 74 240;
-  --accent-hover: 74 59 214;
+  --accent: 234 88 12;
+  --accent-hover: 194 65 12;
   --accent-fg: 255 255 255;
   --win: 21 128 61;
   --danger: 220 38 38;
@@ -25,22 +25,18 @@
   --border: 42 44 56;
   --fg: 243 244 246;
   --muted: 148 152 166;
-  --accent: 124 108 255;
-  --accent-hover: 143 128 255;
+  --accent: 249 115 22;
+  --accent-hover: 234 88 12;
   --accent-fg: 255 255 255;
   --win: 110 231 183;
   --danger: 248 113 113;
 }
 
-/* Accent overrides — applied via data-accent on <html>. Purple is the default
+/* Accent overrides — applied via data-accent on <html>. Orange is the default
    (defined per theme above), so it has no override here. */
 [data-accent="red"] {
   --accent: 220 38 38;
   --accent-hover: 185 28 28;
-}
-[data-accent="orange"] {
-  --accent: 234 88 12;
-  --accent-hover: 194 65 12;
 }
 [data-accent="green"] {
   --accent: 22 163 74;
@@ -50,9 +46,25 @@
   --accent: 37 99 235;
   --accent-hover: 29 78 216;
 }
+[data-accent="purple"] {
+  --accent: 124 108 255;
+  --accent-hover: 143 128 255;
+}
+
+/* Bloodborne isn't just an accent — it recolors the whole app a gothic blood
+   red, regardless of the light/dark toggle. */
 [data-accent="bloodborne"] {
-  --accent: 150 22 22;
-  --accent-hover: 122 16 16;
+  --bg: 22 13 13;
+  --surface: 33 19 19;
+  --elevated: 48 26 26;
+  --border: 68 36 36;
+  --fg: 228 206 202;
+  --muted: 156 116 112;
+  --accent: 178 34 34;
+  --accent-hover: 150 26 26;
+  --accent-fg: 245 235 233;
+  --win: 150 165 110;
+  --danger: 235 110 96;
 }
 
 @layer base {
