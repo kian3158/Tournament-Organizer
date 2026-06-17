@@ -158,7 +158,9 @@ def test_standings_returned_for_swiss(client, auth_headers):
 
     # Play until no more ready matches (rounds appear as we go).
     for _ in range(50):
-        ms = client.get(f"/tournaments/{tid}/bracket").json()["matches"]
+        ms = client.get(f"/tournaments/{tid}/bracket", headers=auth_headers).json()[
+            "matches"
+        ]
         ready = [
             m
             for m in ms
@@ -174,7 +176,7 @@ def test_standings_returned_for_swiss(client, auth_headers):
             headers=auth_headers,
         )
 
-    bracket = client.get(f"/tournaments/{tid}/bracket").json()
+    bracket = client.get(f"/tournaments/{tid}/bracket", headers=auth_headers).json()
     assert bracket["tournament"]["status"] == "COMPLETED"
     assert bracket["standings"] is not None
     assert len(bracket["standings"]) == 4

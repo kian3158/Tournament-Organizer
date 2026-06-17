@@ -116,7 +116,9 @@ def test_standings_returned_for_round_robin(client, auth_headers):
         )
     client.post(f"/tournaments/{tid}/generate", headers=auth_headers)
 
-    ms = client.get(f"/tournaments/{tid}/bracket").json()["matches"]
+    ms = client.get(f"/tournaments/{tid}/bracket", headers=auth_headers).json()[
+        "matches"
+    ]
     for m in ms:
         client.post(
             f"/matches/{m['id']}/result",
@@ -124,7 +126,7 @@ def test_standings_returned_for_round_robin(client, auth_headers):
             headers=auth_headers,
         )
 
-    bracket = client.get(f"/tournaments/{tid}/bracket").json()
+    bracket = client.get(f"/tournaments/{tid}/bracket", headers=auth_headers).json()
     standings = bracket["standings"]
     assert standings is not None
     assert len(standings) == 3
@@ -137,5 +139,5 @@ def test_standings_returned_for_round_robin(client, auth_headers):
 
 def test_standings_absent_for_single_elimination(client, auth_headers):
     t = client.post("/tournaments", json={"name": "SE"}, headers=auth_headers).json()
-    bracket = client.get(f"/tournaments/{t['id']}/bracket").json()
+    bracket = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()
     assert bracket["standings"] is None

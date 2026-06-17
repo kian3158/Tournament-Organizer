@@ -7,7 +7,9 @@ from app.tests.test_editing import make, play_all
 def test_two_player_stats(client, auth_headers):
     t, _ = make(client, auth_headers, players=2)
     client.post(f"/tournaments/{t['id']}/generate", headers=auth_headers)
-    m = client.get(f"/tournaments/{t['id']}/bracket").json()["matches"][0]
+    m = client.get(f"/tournaments/{t['id']}/bracket", headers=auth_headers).json()[
+        "matches"
+    ][0]
     client.post(
         f"/matches/{m['id']}/result",
         json={"winner_id": m["player_a_id"]},

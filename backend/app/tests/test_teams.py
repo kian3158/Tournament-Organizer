@@ -36,7 +36,9 @@ def test_add_members_to_team(client, auth_headers):
     add_member(client, auth_headers, t["id"], team["id"], "Ana")
     add_member(client, auth_headers, t["id"], team["id"], "Bo")
 
-    participants = client.get(f"/tournaments/{t['id']}/participants").json()
+    participants = client.get(
+        f"/tournaments/{t['id']}/participants", headers=auth_headers
+    ).json()
     members = participants[0]["members"]
     assert [m["name"] for m in members] == ["Ana", "Bo"]
 
@@ -65,7 +67,9 @@ def test_delete_member(client, auth_headers):
         headers=auth_headers,
     )
     assert r.status_code == 204
-    participants = client.get(f"/tournaments/{t['id']}/participants").json()
+    participants = client.get(
+        f"/tournaments/{t['id']}/participants", headers=auth_headers
+    ).json()
     assert participants[0]["members"] == []
 
 
@@ -107,7 +111,10 @@ def test_deleting_team_removes_members(client, auth_headers):
         f"/tournaments/{t['id']}/participants/{team['id']}", headers=auth_headers
     )
     assert r.status_code == 204
-    assert client.get(f"/tournaments/{t['id']}/participants").json() == []
+    assert (
+        client.get(f"/tournaments/{t['id']}/participants", headers=auth_headers).json()
+        == []
+    )
 
 
 def test_deleting_tournament_with_teams(client, auth_headers):
@@ -117,4 +124,6 @@ def test_deleting_tournament_with_teams(client, auth_headers):
 
     r = client.delete(f"/tournaments/{t['id']}", headers=auth_headers)
     assert r.status_code == 204
-    assert client.get(f"/tournaments/{t['id']}").status_code == 404
+    assert (
+        client.get(f"/tournaments/{t['id']}", headers=auth_headers).status_code == 404
+    )

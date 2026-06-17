@@ -4,7 +4,9 @@ from app.tests.test_editing import make
 
 
 def first_match(client, headers, tid):
-    return client.get(f"/tournaments/{tid}/bracket").json()["matches"][0]
+    return client.get(f"/tournaments/{tid}/bracket", headers=headers).json()["matches"][
+        0
+    ]
 
 
 def test_report_with_scores(client, auth_headers):

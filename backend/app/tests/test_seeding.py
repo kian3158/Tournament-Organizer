@@ -4,10 +4,10 @@ from app.tests.conftest import register_and_login
 from app.tests.test_editing import make
 
 
-def seeds(client, tid):
+def seeds(client, headers, tid):
     return {
         p["id"]: p["seed"]
-        for p in client.get(f"/tournaments/{tid}/participants").json()
+        for p in client.get(f"/tournaments/{tid}/participants", headers=headers).json()
     }
 
 
@@ -20,7 +20,7 @@ def test_reorder_sets_seeds_by_position(client, auth_headers):
         headers=auth_headers,
     )
     assert r.status_code == 200, r.text
-    s = seeds(client, t["id"])
+    s = seeds(client, auth_headers, t["id"])
     assert s[ids[2]] == 1 and s[ids[0]] == 2 and s[ids[1]] == 3
 
 

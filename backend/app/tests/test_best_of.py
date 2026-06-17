@@ -20,8 +20,10 @@ def make_bo(client, headers, best_of, fmt="ROUND_ROBIN", players=3):
     return t, tid
 
 
-def first_match(client, tid):
-    return client.get(f"/tournaments/{tid}/bracket").json()["matches"][0]
+def first_match(client, headers, tid):
+    return client.get(f"/tournaments/{tid}/bracket", headers=headers).json()["matches"][
+        0
+    ]
 
 
 def report(client, headers, m, a, b):
@@ -44,7 +46,7 @@ def test_even_best_of_rejected(client, auth_headers):
 
 def test_bo3_clinching_score_ok(client, auth_headers):
     _, tid = make_bo(client, auth_headers, 3)
-    m = first_match(client, tid)
+    m = first_match(client, auth_headers, tid)
     r = report(client, auth_headers, m, 2, 1)  # winner reaches 2 of 3
     assert r.status_code == 200, r.text
     assert r.json()["score_a"] == 2
@@ -52,24 +54,24 @@ def test_bo3_clinching_score_ok(client, auth_headers):
 
 def test_bo3_sweep_ok(client, auth_headers):
     _, tid = make_bo(client, auth_headers, 3)
-    m = first_match(client, tid)
+    m = first_match(client, auth_headers, tid)
     assert report(client, auth_headers, m, 2, 0).status_code == 200
 
 
 def test_bo3_winner_short_of_majority_rejected(client, auth_headers):
     _, tid = make_bo(client, auth_headers, 3)
-    m = first_match(client, tid)
+    m = first_match(client, auth_headers, tid)
     assert report(client, auth_headers, m, 1, 0).status_code == 400
 
 
 def test_bo3_winner_over_majority_rejected(client, auth_headers):
     _, tid = make_bo(client, auth_headers, 3)
-    m = first_match(client, tid)
+    m = first_match(client, auth_headers, tid)
     assert report(client, auth_headers, m, 3, 1).status_code == 400
 
 
 def test_bo1_allows_free_scores(client, auth_headers):
     _, tid = make_bo(client, auth_headers, 1)
-    m = first_match(client, tid)
+    m = first_match(client, auth_headers, tid)
     # best_of 1 keeps the loose rule: winner just needs the higher score.
     assert report(client, auth_headers, m, 2, 1).status_code == 200
