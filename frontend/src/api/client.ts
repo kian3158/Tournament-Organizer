@@ -2,6 +2,7 @@ import type {
   Bracket,
   Match,
   Participant,
+  ParticipantStat,
   RosterMember,
   Token,
   Tournament,
@@ -64,6 +65,8 @@ export const api = {
     }),
 
   me: () => request<User>("/auth/me"),
+
+  getMyStats: () => request<ParticipantStat[]>("/stats"),
 
   // --- tournaments ---
   listTournaments: () => request<Tournament[]>("/tournaments"),
