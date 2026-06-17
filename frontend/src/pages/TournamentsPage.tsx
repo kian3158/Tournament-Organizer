@@ -3,6 +3,22 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { Tournament, TournamentFormat } from "../api/types";
 
+interface Preset {
+  label: string;
+  format: TournamentFormat;
+  bestOf: number;
+  thirdPlace: boolean;
+}
+
+// Quick starting points for common game-night setups.
+const PRESETS: Preset[] = [
+  { label: "Game night", format: "SINGLE_ELIM", bestOf: 1, thirdPlace: true },
+  { label: "Bo3 cup", format: "SINGLE_ELIM", bestOf: 3, thirdPlace: true },
+  { label: "Double elim", format: "DOUBLE_ELIM", bestOf: 3, thirdPlace: false },
+  { label: "Round robin", format: "ROUND_ROBIN", bestOf: 1, thirdPlace: false },
+  { label: "Swiss", format: "SWISS", bestOf: 3, thirdPlace: false },
+];
+
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [name, setName] = useState("");
@@ -24,6 +40,12 @@ export default function TournamentsPage() {
     });
   }, []);
 
+  function applyPreset(p: Preset) {
+    setFormat(p.format);
+    setBestOf(p.bestOf);
+    setThirdPlace(p.thirdPlace);
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -41,6 +63,19 @@ export default function TournamentsPage() {
     <div className="space-y-10">
       <section className="rounded-xl border bg-surface p-5 shadow-sm">
         <h1 className="mb-4 text-xl font-semibold">New tournament</h1>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted">Presets:</span>
+          {PRESETS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => applyPreset(p)}
+              className="rounded-full border px-3 py-1 text-sm transition-colors hover:bg-elevated"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
         <form
           onSubmit={handleCreate}
           className="flex flex-wrap items-center gap-3"
